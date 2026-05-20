@@ -1,13 +1,19 @@
 'use client';
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, use, useEffect } from 'react';
 import { useChat } from '@/hooks/useChat';
 import ChatList from '@/components/ChatList';
 import ChatThread from '@/components/ChatThread';
 import GraphView from '@/components/GraphView';
 import SettingsModal from '@/components/SettingsModal';
 
-export default function Home() {
+export default function ChatPage({
+  params,
+}: {
+  params: Promise<{ id: string }>;
+}) {
+  const { id } = use(params);
+
   const {
     chats,
     activeChat,
@@ -23,7 +29,7 @@ export default function Home() {
     error,
     setError,
     setActiveChatId,
-  } = useChat(null);
+  } = useChat(id);
 
   const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(false);
   const [isLeftMobileOpen, setIsLeftMobileOpen] = useState(false);
@@ -104,8 +110,8 @@ export default function Home() {
         <ChatList
           chats={chats}
           activeChatId={activeChatId}
-          onSelectChat={(id) => {
-            setActiveChatId(id);
+          onSelectChat={(chatId) => {
+            setActiveChatId(chatId);
             setIsLeftMobileOpen(false);
           }}
           onNewChat={() => {
