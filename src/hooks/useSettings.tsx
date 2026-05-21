@@ -8,6 +8,7 @@ interface SettingsContextType {
   loading: boolean;
   updateSettings: (settings: Partial<AppSettings>) => Promise<void>;
   hasKey: boolean;
+  envKeys: Record<string, boolean>;
 }
 
 const SettingsContext = createContext<SettingsContextType | undefined>(undefined);
@@ -16,6 +17,11 @@ export function SettingsProvider({ children }: { children: React.ReactNode }) {
   const [settings, setSettings] = useState<AppSettings | null>(null);
   const [loading, setLoading] = useState(true);
   const [hasKey, setHasKey] = useState(false);
+  const [envKeys, setEnvKeys] = useState<Record<string, boolean>>({
+    claude: false,
+    openai: false,
+    gemini: false,
+  });
 
   const fetchSettings = async () => {
     try {
@@ -24,6 +30,9 @@ export function SettingsProvider({ children }: { children: React.ReactNode }) {
         const data = await res.json();
         setSettings(data.settings);
         setHasKey(data.hasKey);
+        if (data.envKeys) {
+          setEnvKeys(data.envKeys);
+        }
       }
     } catch (error) {
       console.error('Failed to fetch settings:', error);
@@ -33,6 +42,7 @@ export function SettingsProvider({ children }: { children: React.ReactNode }) {
   };
 
   useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     fetchSettings();
   }, []);
 
@@ -53,6 +63,9 @@ export function SettingsProvider({ children }: { children: React.ReactNode }) {
         const data = await res.json();
         setSettings(data.settings);
         setHasKey(data.hasKey);
+        if (data.envKeys) {
+          setEnvKeys(data.envKeys);
+        }
       }
     } catch (error) {
       console.error('Failed to save settings:', error);
@@ -60,7 +73,7 @@ export function SettingsProvider({ children }: { children: React.ReactNode }) {
   };
 
   return (
-    <SettingsContext.Provider value={{ settings, loading, updateSettings, hasKey }}>
+    <SettingsContext.Provider value={{ settings, loading, updateSettings, hasKey, envKeys }}>
       {children}
     </SettingsContext.Provider>
   );

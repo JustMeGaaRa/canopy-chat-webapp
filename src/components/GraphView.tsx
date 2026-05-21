@@ -147,7 +147,6 @@ export default function GraphView({
       clearTimeout(timer);
       resizeObserver.disconnect();
     };
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [activeChat?.id]);
 
   const handleZoomIn = () => {

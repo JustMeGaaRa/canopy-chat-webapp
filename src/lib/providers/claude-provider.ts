@@ -4,13 +4,13 @@ import { ChatMessage, ChatProvider } from './types';
 export class ClaudeProvider implements ChatProvider {
   id = 'claude';
   name = 'Anthropic Claude';
-  model = 'claude-sonnet-4-5';
 
   async sendMessage(
     messages: ChatMessage[],
-    options?: { stream?: boolean; apiKey?: string }
+    options?: { stream?: boolean; apiKey?: string; modelId?: string }
   ): Promise<ReadableStream<Uint8Array> | string> {
     const apiKey = options?.apiKey || process.env.ANTHROPIC_API_KEY;
+    const model = options?.modelId || 'claude-3-5-sonnet-latest';
     if (!apiKey) {
       throw new Error('ANTHROPIC_API_KEY is missing');
     }
@@ -24,7 +24,7 @@ export class ClaudeProvider implements ChatProvider {
         return new ReadableStream<Uint8Array>({
           async start(controller) {
             const encoder = new TextEncoder();
-            const text = "This is a mock streaming response from Canopy. The branching tree layout, dynamic settings, and panel scaling are running perfectly!";
+            const text = `This is a mock streaming response from Anthropic Claude (${model}) via Canopy. The branching tree layout, dynamic settings, and panel scaling are running perfectly!`;
             const words = text.split(' ');
             try {
               for (const word of words) {
@@ -38,7 +38,7 @@ export class ClaudeProvider implements ChatProvider {
           },
         });
       } else {
-        return "This is a mock response from Canopy.";
+        return `This is a mock response from Anthropic Claude (${model}).`;
       }
     }
 
@@ -52,7 +52,7 @@ export class ClaudeProvider implements ChatProvider {
       const stream = await anthropic.messages.create({
         max_tokens: 4000,
         messages: formattedMessages,
-        model: this.model,
+        model: model,
         stream: true,
       });
 
@@ -75,7 +75,7 @@ export class ClaudeProvider implements ChatProvider {
       const response = await anthropic.messages.create({
         max_tokens: 4000,
         messages: formattedMessages,
-        model: this.model,
+        model: model,
       });
 
       const textBlock = response.content.find((block) => block.type === 'text');

@@ -1,8 +1,6 @@
-'use client';
-
 import React, { useState, useEffect } from 'react';
 import { useSettings } from '@/hooks/useSettings';
-import { X, Moon, Sun, Monitor, Shield, Settings2 } from 'lucide-react';
+import { X, Moon, Sun, Monitor, Shield, Settings2, Trash2 } from 'lucide-react';
 
 interface SettingsModalProps {
   isOpen: boolean;
@@ -10,25 +8,68 @@ interface SettingsModalProps {
 }
 
 export default function SettingsModal({ isOpen, onClose }: SettingsModalProps) {
-  const { settings, updateSettings } = useSettings();
+  const { settings, updateSettings, envKeys } = useSettings();
   const [localTheme, setLocalTheme] = useState<'light' | 'dark' | 'system'>('system');
-  const [localApiKey, setLocalApiKey] = useState('');
   const [localSpacing, setLocalSpacing] = useState(90);
+
+  // New fields
+  const [localProviderId, setLocalProviderId] = useState('claude');
+  const [localModelId, setLocalModelId] = useState('');
+  const [localProviderKeys, setLocalProviderKeys] = useState<Record<string, string>>({
+    claude: '',
+    openai: '',
+    gemini: '',
+  });
+  const [localProviderModels, setLocalProviderModels] = useState<Record<string, string[]>>({
+    claude: [],
+    openai: [],
+    gemini: [],
+  });
+
+  // UI helper states
+  const [modelConfigProvider, setModelConfigProvider] = useState('claude');
+  const [newModelName, setNewModelName] = useState('');
 
   useEffect(() => {
     if (settings) {
+      // eslint-disable-next-line react-hooks/set-state-in-effect
       setLocalTheme(settings.theme);
-      setLocalApiKey(settings.providerApiKey || '');
       setLocalSpacing(settings.graphRingSpacing);
+      setLocalProviderId(settings.providerId || 'claude');
+      setLocalModelId(settings.modelId || '');
+
+      setLocalProviderKeys({
+        claude: settings.providerKeys?.claude || settings.providerApiKey || '',
+        openai: settings.providerKeys?.openai || '',
+        gemini: settings.providerKeys?.gemini || '',
+      });
+
+      setLocalProviderModels({
+        claude: settings.providerModels?.claude || [],
+        openai: settings.providerModels?.openai || [],
+        gemini: settings.providerModels?.gemini || [],
+      });
     }
-  }, [settings]);
+  }, [settings, isOpen]);
 
   if (!isOpen || !settings) return null;
 
   const handleSave = async () => {
+    let finalModelId = localModelId;
+    if (!finalModelId) {
+      const models = localProviderModels[localProviderId] || [];
+      if (models.length > 0) {
+        finalModelId = models[0];
+      }
+    }
+
     await updateSettings({
       theme: localTheme,
-      providerApiKey: localApiKey,
+      providerId: localProviderId,
+      modelId: finalModelId,
+      providerKeys: localProviderKeys,
+      providerModels: localProviderModels,
+      providerApiKey: localProviderKeys.claude, // Legacy safety
       graphRingSpacing: localSpacing,
     });
     onClose();
@@ -86,39 +127,178 @@ export default function SettingsModal({ isOpen, onClose }: SettingsModalProps) {
               AI Provider Configuration
             </label>
             <div className="space-y-3 rounded-xl border border-neutral-100 bg-neutral-50/50 p-4 dark:border-neutral-800 dark:bg-neutral-900/50">
-              <div className="space-y-1">
-                <span className="text-xs font-medium text-neutral-700 dark:text-neutral-300">
+              <div className="space-y-1.5">
+                <label className="text-xs font-semibold text-neutral-700 dark:text-neutral-300">
                   Active Provider
-                </span>
-                <div className="text-sm font-semibold text-neutral-950 dark:text-neutral-50 flex items-center gap-2">
-                  <span className="h-2 w-2 rounded-full bg-emerald-500"></span>
-                  Anthropic Claude (claude-sonnet-4-5)
-                </div>
+                </label>
+                <select
+                  value={localProviderId}
+                  onChange={(e) => {
+                    const nextProv = e.target.value;
+                    setLocalProviderId(nextProv);
+                    const provModels = localProviderModels[nextProv] || [];
+                    if (provModels.length > 0) {
+                      setLocalModelId(provModels[0]);
+                    }
+                  }}
+                  className="w-full rounded-xl border border-neutral-200 bg-white px-3 py-2 text-sm text-neutral-900 shadow-sm focus:border-blue-500 focus:outline-none dark:border-neutral-800 dark:bg-neutral-950 dark:text-neutral-50 cursor-pointer"
+                >
+                  <option value="claude">Anthropic Claude</option>
+                  <option value="openai">OpenAI</option>
+                  <option value="gemini">Google Gemini</option>
+                </select>
               </div>
 
               <div className="space-y-1.5">
                 <div className="flex items-center justify-between">
                   <label className="text-xs font-medium text-neutral-700 dark:text-neutral-300 flex items-center gap-1">
-                    <Shield className="h-3 w-3 text-neutral-400" />
-                    Anthropic API Key
+                    <Shield className="h-3.5 w-3.5 text-neutral-400" />
+                    {localProviderId === 'claude'
+                      ? 'Anthropic API Key'
+                      : localProviderId === 'openai'
+                      ? 'OpenAI API Key'
+                      : 'Gemini API Key'}
                   </label>
-                  {process.env.NEXT_PUBLIC_HAS_ENV_KEY && (
-                    <span className="text-[10px] bg-emerald-100 text-emerald-800 dark:bg-emerald-950/50 dark:text-emerald-400 px-1.5 py-0.5 rounded font-medium">
+                  {envKeys?.[localProviderId] && (
+                    <span className="text-[10px] bg-emerald-100 text-emerald-800 dark:bg-emerald-950/50 dark:text-emerald-400 px-1.5 py-0.5 rounded font-semibold">
                       Loaded from environment
                     </span>
                   )}
                 </div>
                 <input
                   type="password"
-                  placeholder="Enter your api key override..."
-                  value={localApiKey}
-                  onChange={(e) => setLocalApiKey(e.target.value)}
-                  className="w-full rounded-xl border border-neutral-200 bg-white px-3.5 py-2 text-sm text-neutral-900 shadow-sm focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500 dark:border-neutral-800 dark:bg-neutral-950 dark:text-neutral-50 dark:focus:border-blue-500"
+                  placeholder={`Enter API key override for ${
+                    localProviderId === 'claude'
+                      ? 'Claude'
+                      : localProviderId === 'openai'
+                      ? 'OpenAI'
+                      : 'Gemini'
+                  }...`}
+                  value={localProviderKeys[localProviderId] || ''}
+                  onChange={(e) => {
+                    setLocalProviderKeys({
+                      ...localProviderKeys,
+                      [localProviderId]: e.target.value,
+                    });
+                  }}
+                  className="w-full rounded-xl border border-neutral-200 bg-white px-3.5 py-2 text-sm text-neutral-900 shadow-sm focus:border-blue-500 focus:outline-none dark:border-neutral-800 dark:bg-neutral-950 dark:text-neutral-50"
                 />
                 <p className="text-[10px] text-neutral-400 dark:text-neutral-500 leading-normal">
                   Your key is saved locally in your user configuration file and is never uploaded
                   elsewhere.
                 </p>
+              </div>
+            </div>
+          </div>
+
+          {/* Section 3: Model Names Management */}
+          <div className="space-y-2">
+            <label className="text-xs font-semibold uppercase tracking-wider text-neutral-400 dark:text-neutral-500">
+              Models Management per Provider
+            </label>
+            <div className="space-y-3 rounded-xl border border-neutral-100 bg-neutral-50/50 p-4 dark:border-neutral-800 dark:bg-neutral-900/50">
+              <div className="flex gap-2 items-center">
+                <span className="text-xs font-medium text-neutral-700 dark:text-neutral-300 whitespace-nowrap">
+                  Configure Provider:
+                </span>
+                <select
+                  value={modelConfigProvider}
+                  onChange={(e) => setModelConfigProvider(e.target.value)}
+                  className="rounded-lg border border-neutral-200 bg-white px-2 py-1 text-xs text-neutral-900 dark:border-neutral-800 dark:bg-neutral-950 dark:text-neutral-50 cursor-pointer"
+                >
+                  <option value="claude">Anthropic</option>
+                  <option value="openai">OpenAI</option>
+                  <option value="gemini">Google Gemini</option>
+                </select>
+              </div>
+
+              {/* Models List */}
+              <div className="space-y-1.5 max-h-[140px] overflow-y-auto pr-1 border border-neutral-200/40 dark:border-neutral-800/40 rounded-xl p-2 bg-white dark:bg-neutral-950/20 scrollbar-thin">
+                {(localProviderModels[modelConfigProvider] || []).length === 0 ? (
+                  <div className="text-[11px] text-neutral-400 dark:text-neutral-500 text-center py-4">
+                    No models registered. Add one below.
+                  </div>
+                ) : (
+                  (localProviderModels[modelConfigProvider] || []).map((mId) => (
+                    <div
+                      key={mId}
+                      className="flex items-center justify-between px-2 py-1 bg-neutral-100/50 dark:bg-neutral-800/30 rounded-lg text-xs"
+                    >
+                      <span
+                        className="font-mono text-[11px] text-neutral-700 dark:text-neutral-300 truncate max-w-[200px]"
+                        title={mId}
+                      >
+                        {mId}
+                      </span>
+                      <button
+                        type="button"
+                        onClick={() => {
+                          const currentModels = localProviderModels[modelConfigProvider] || [];
+                          const updatedModels = currentModels.filter((m) => m !== mId);
+
+                          setLocalProviderModels({
+                            ...localProviderModels,
+                            [modelConfigProvider]: updatedModels,
+                          });
+
+                          if (localModelId === mId) {
+                            setLocalModelId(updatedModels[0] || '');
+                          }
+                        }}
+                        className="text-red-500 hover:text-red-600 dark:hover:text-red-400 font-semibold cursor-pointer px-1"
+                        title="Remove model"
+                      >
+                        <Trash2 className="h-3.5 w-3.5" />
+                      </button>
+                    </div>
+                  ))
+                )}
+              </div>
+
+              {/* Add Model Form */}
+              <div className="flex gap-2">
+                <input
+                  type="text"
+                  placeholder="Enter new model ID..."
+                  value={newModelName}
+                  onChange={(e) => setNewModelName(e.target.value)}
+                  className="flex-1 rounded-xl border border-neutral-200 bg-white px-3 py-1.5 text-xs text-neutral-900 dark:border-neutral-800 dark:bg-neutral-950 dark:text-neutral-50 focus:border-blue-500 focus:outline-none"
+                  onKeyDown={(e) => {
+                    if (e.key === 'Enter') {
+                      e.preventDefault();
+                      const trimmed = newModelName.trim();
+                      if (trimmed) {
+                        const current = localProviderModels[modelConfigProvider] || [];
+                        if (!current.includes(trimmed)) {
+                          setLocalProviderModels({
+                            ...localProviderModels,
+                            [modelConfigProvider]: [...current, trimmed],
+                          });
+                          setNewModelName('');
+                        }
+                      }
+                    }
+                  }}
+                />
+                <button
+                  type="button"
+                  onClick={() => {
+                    const trimmed = newModelName.trim();
+                    if (trimmed) {
+                      const current = localProviderModels[modelConfigProvider] || [];
+                      if (!current.includes(trimmed)) {
+                        setLocalProviderModels({
+                          ...localProviderModels,
+                          [modelConfigProvider]: [...current, trimmed],
+                        });
+                        setNewModelName('');
+                      }
+                    }
+                  }}
+                  className="rounded-xl bg-neutral-900 dark:bg-neutral-100 dark:text-neutral-900 text-white hover:bg-neutral-800 px-3 py-1.5 text-xs font-semibold transition cursor-pointer"
+                >
+                  Add
+                </button>
               </div>
             </div>
           </div>

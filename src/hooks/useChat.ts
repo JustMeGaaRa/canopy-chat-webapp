@@ -49,9 +49,9 @@ export function useChat(initialChatId?: string | null) {
         } else if (data.chats.length === 0) {
           setIsNewChatMode(true);
         }
-      } catch (err: any) {
+      } catch (err) {
         console.error(err);
-        setError(err.message);
+        setError(err instanceof Error ? err.message : String(err));
       } finally {
         setLoading(false);
       }
@@ -68,14 +68,15 @@ export function useChat(initialChatId?: string | null) {
       const data = await res.json();
       setActiveChat(data.chat);
       setSelectedNodeId(data.chat.selectedNodeId);
-    } catch (err: any) {
+    } catch (err) {
       console.error(err);
-      setError(err.message);
+      setError(err instanceof Error ? err.message : String(err));
     }
   }, []);
 
   // Fetch initial chats list
   useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     loadChatsList();
   }, [loadChatsList]);
 
@@ -89,6 +90,7 @@ export function useChat(initialChatId?: string | null) {
       loadChat(activeChatId);
       setIsNewChatMode(false);
     } else {
+      // eslint-disable-next-line react-hooks/set-state-in-effect
       setActiveChat(null);
       setSelectedNodeId(null);
     }
@@ -142,9 +144,9 @@ export function useChat(initialChatId?: string | null) {
         }
 
         await loadChatsList();
-      } catch (err: any) {
+      } catch (err) {
         console.error(err);
-        setError(err.message);
+        setError(err instanceof Error ? err.message : String(err));
       }
     },
     [activeChatId, loadChatsList, router]
@@ -200,8 +202,8 @@ export function useChat(initialChatId?: string | null) {
           setActiveChat(newChat);
           // Navigate to the new chat's URL
           router.push(`/chat/${chatId}`);
-        } catch (err: any) {
-          setError(err.message);
+        } catch (err) {
+          setError(err instanceof Error ? err.message : String(err));
           return;
         }
       }
@@ -254,8 +256,8 @@ export function useChat(initialChatId?: string | null) {
           accumulatedText += decoder.decode(value, { stream: true });
           setStreamingText(accumulatedText);
         }
-      } catch (err: any) {
-        setError(err.message);
+      } catch (err) {
+        setError(err instanceof Error ? err.message : String(err));
       } finally {
         setStreaming(false);
         setStreamingText('');

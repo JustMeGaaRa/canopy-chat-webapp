@@ -19,16 +19,34 @@ export async function POST(request: Request, { params }: { params: Promise<{ id:
 
     const settings = await getSettings();
     const providerId = settings.providerId || 'claude';
+    const modelId = settings.modelId;
 
-    // Prefer the user-saved key, fall back to the env variable.
-    // Treat an empty string as "not set" so the env fallback always works.
-    const savedKey = (settings.providerApiKey || '').trim();
-    const envKey = (process.env.ANTHROPIC_API_KEY || '').trim();
+    // Determine the API key for the active provider
+    let savedKey = (settings.providerKeys?.[providerId] || '').trim();
+    if (providerId === 'claude' && !savedKey) {
+      savedKey = (settings.providerApiKey || '').trim(); // Legacy fallback
+    }
+
+    let envKey = '';
+    if (providerId === 'claude') {
+      envKey = (process.env.ANTHROPIC_API_KEY || '').trim();
+    } else if (providerId === 'openai') {
+      envKey = (process.env.OPENAI_API_KEY || '').trim();
+    } else if (providerId === 'gemini') {
+      envKey = (process.env.GEMINI_API_KEY || '').trim();
+    }
+
     const providerApiKey = savedKey || envKey;
 
     if (!providerApiKey) {
+      const providerLabel =
+        providerId === 'claude'
+          ? 'Anthropic Claude'
+          : providerId === 'openai'
+          ? 'OpenAI'
+          : 'Google Gemini';
       return NextResponse.json(
-        { error: 'API key is missing. Please configure it in settings or .env.local.' },
+        { error: `API key is missing for ${providerLabel}. Please configure it in settings.` },
         { status: 400 }
       );
     }
@@ -71,10 +89,11 @@ export async function POST(request: Request, { params }: { params: Promise<{ id:
       aiStream = await provider.sendMessage(history, {
         stream: true,
         apiKey: providerApiKey,
+        modelId,
       });
-    } catch (err: any) {
+    } catch (err) {
       console.error('[message/route] provider.sendMessage error:', err);
-      return NextResponse.json({ error: err.message }, { status: 500 });
+      return NextResponse.json({ error: err instanceof Error ? err.message : String(err) }, { status: 500 });
     }
 
     if (!(aiStream instanceof ReadableStream)) {
@@ -118,9 +137,9 @@ export async function POST(request: Request, { params }: { params: Promise<{ id:
           });
 
           controller.close();
-        } catch (err: any) {
+        } catch (err) {
           console.error('[message/route] Streaming error:', err);
-          controller.error(err);
+          controller.error(err instanceof Error ? err : new Error(String(err)));
         }
       },
     });
@@ -133,8 +152,8 @@ export async function POST(request: Request, { params }: { params: Promise<{ id:
         'X-Accel-Buffering': 'no',
       },
     });
-  } catch (error: any) {
+  } catch (error) {
     console.error('[message/route] Unhandled error:', error);
-    return NextResponse.json({ error: error.message }, { status: 500 });
+    return NextResponse.json({ error: error instanceof Error ? error.message : String(error) }, { status: 500 });
   }
 }

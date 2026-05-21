@@ -4,7 +4,7 @@ import React, { useState, useRef, useEffect } from 'react';
 import { Chat, ChatNode } from '@/lib/storage/types';
 import MessageBubble from './MessageBubble';
 import { useSettings } from '@/hooks/useSettings';
-import { Send, GitFork, AlertCircle, Settings, HelpCircle, Menu, Network, Bot } from 'lucide-react';
+import { Send, GitFork, AlertCircle, Settings, HelpCircle, Menu, Network, Bot, Plus, Mic, ChevronDown, Check } from 'lucide-react';
 
 interface ChatThreadProps {
   activeChat: Chat | null;
@@ -20,6 +20,30 @@ interface ChatThreadProps {
   setError: (err: string | null) => void;
 }
 
+const MODEL_LABEL_MAP: Record<string, string> = {
+  'claude-3-7-sonnet-latest': 'Claude 3.7 Sonnet',
+  'claude-3-5-sonnet-latest': 'Claude 3.5 Sonnet',
+  'claude-3-5-haiku-latest': 'Claude 3.5 Haiku',
+  'claude-3-opus-latest': 'Claude 3 Opus',
+  'gpt-4o': 'GPT-4o',
+  'gpt-4o-mini': 'GPT-4o Mini',
+  'o1': 'OpenAI o1',
+  'o3-mini': 'OpenAI o3-mini',
+  'gemini-3.5-flash-medium': 'Gemini 3.5 Flash (Medium)',
+  'gemini-2.5-pro': 'Gemini 2.5 Pro',
+  'gemini-2.5-flash': 'Gemini 2.5 Flash',
+  'gemini-1.5-pro': 'Gemini 1.5 Pro',
+  'gemini-1.5-flash': 'Gemini 1.5 Flash',
+};
+
+const formatModelName = (modelId: string) => {
+  if (MODEL_LABEL_MAP[modelId]) return MODEL_LABEL_MAP[modelId];
+  return modelId
+    .split('-')
+    .map((word) => word.charAt(0).toUpperCase() + word.slice(1))
+    .join(' ');
+};
+
 export default function ChatThread({
   activeChat,
   selectedNodeId,
@@ -33,10 +57,36 @@ export default function ChatThread({
   error,
   setError,
 }: ChatThreadProps) {
-  const { hasKey } = useSettings();
+  const { settings, updateSettings, hasKey, envKeys } = useSettings();
   const [input, setInput] = useState('');
   const [sending, setSending] = useState(false);
+  const [showDropdown, setShowDropdown] = useState(false);
   const scrollRef = useRef<HTMLDivElement>(null);
+  const dropdownRef = useRef<HTMLDivElement>(null);
+
+  const isProviderEnabled = (providerId: string) => {
+    if (!settings) return false;
+    const hasSavedKey = !!(settings.providerKeys?.[providerId] || '').trim();
+    const hasEnvKey = !!envKeys?.[providerId];
+    if (providerId === 'claude' && !hasSavedKey && !hasEnvKey) {
+      return !!(settings.providerApiKey || '').trim();
+    }
+    return hasSavedKey || hasEnvKey;
+  };
+
+  useEffect(() => {
+    function handleClickOutside(event: MouseEvent) {
+      if (dropdownRef.current && !dropdownRef.current.contains(event.target as Node)) {
+        setShowDropdown(false);
+      }
+    }
+    if (showDropdown) {
+      document.addEventListener('mousedown', handleClickOutside);
+    }
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside);
+    };
+  }, [showDropdown]);
 
   // Compute children counts to identify branch points
   const childrenCounts = React.useMemo(() => {
@@ -126,7 +176,21 @@ export default function ChatThread({
   };
 
   // Missing API Key View
-  if (!hasKey) {
+  if (!hasKey && settings) {
+    const activeProvider = settings.providerId || 'claude';
+    const providerLabel =
+      activeProvider === 'claude'
+        ? 'Anthropic Claude'
+        : activeProvider === 'openai'
+        ? 'OpenAI'
+        : 'Google Gemini';
+    const envVarName =
+      activeProvider === 'claude'
+        ? 'ANTHROPIC_API_KEY'
+        : activeProvider === 'openai'
+        ? 'OPENAI_API_KEY'
+        : 'GEMINI_API_KEY';
+
     return (
       <div className="flex h-full flex-col bg-white dark:bg-neutral-950">
         {/* Mobile Header */}
@@ -151,18 +215,18 @@ export default function ChatThread({
             <AlertCircle className="h-10 w-10 animate-pulse" />
           </div>
           <h3 className="text-lg font-bold text-neutral-900 dark:text-neutral-100 font-sans">
-            Anthropic API Key Required
+            {providerLabel} API Key Required
           </h3>
           <p className="text-sm text-neutral-500 dark:text-neutral-400 leading-relaxed font-sans">
-            Canopy relies on Anthropic Claude to generate responses. Please set the{' '}
+            Canopy relies on {providerLabel} to generate responses. Please set the{' '}
             <code className="rounded-md bg-neutral-100 dark:bg-neutral-800 px-1 py-0.5 font-mono text-xs">
-              ANTHROPIC_API_KEY
+              {envVarName}
             </code>{' '}
             variable in your{' '}
             <code className="rounded-md bg-neutral-100 dark:bg-neutral-800 px-1 py-0.5 font-mono text-xs">
               .env.local
             </code>{' '}
-            file, or click the button below to provide a key override.
+            file, or click the button below to provide a key override in settings.
           </p>
           <button
             onClick={onOpenSettings}
@@ -233,7 +297,7 @@ export default function ChatThread({
             </p>
           </div>
         ) : (
-          <>
+          <div className="w-full max-w-3xl mx-auto flex flex-col">
             {pathNodes.map((node) => (
               <MessageBubble
                 key={node.id}
@@ -249,25 +313,27 @@ export default function ChatThread({
 
             {/* AI Loading Bubble (if stream hasn't output text yet) */}
             {streaming && !streamingText && (
-              <div className="flex w-full flex-col items-start mb-4">
-                <div className="flex items-center gap-1 mb-1">
-                  <div className="rounded-full p-0.5 bg-emerald-100 text-emerald-600 dark:bg-emerald-950 dark:text-emerald-400">
-                    <Bot className="h-3 w-3" />
+              <div className="grid grid-cols-12 gap-x-4 w-full mb-5">
+                <div className="col-span-12 flex flex-col items-start">
+                  <div className="flex items-center gap-1 mb-1.5 px-1">
+                    <div className="rounded-full p-0.5 bg-emerald-100 text-emerald-600 dark:bg-emerald-950 dark:text-emerald-400">
+                      <Bot className="h-3 w-3" />
+                    </div>
+                    <span className="text-[10px] font-bold text-neutral-400 dark:text-neutral-500 uppercase tracking-wider font-sans">
+                      Assistant
+                    </span>
                   </div>
-                  <span className="text-[10px] font-bold text-neutral-400 dark:text-neutral-500 uppercase tracking-wider font-sans">
-                    Assistant
-                  </span>
-                </div>
-                <div className="rounded-2xl bg-white border border-neutral-100 px-4.5 py-3 text-sm dark:bg-neutral-800 dark:border-neutral-700/60 rounded-tl-xs shadow-xs">
-                  <div className="flex items-center gap-1.5 py-1">
-                    <span className="h-2 w-2 animate-bounce rounded-full bg-neutral-400"></span>
-                    <span className="h-2 w-2 animate-bounce rounded-full bg-neutral-400 [animation-delay:0.2s]"></span>
-                    <span className="h-2 w-2 animate-bounce rounded-full bg-neutral-400 [animation-delay:0.4s]"></span>
+                  <div className="rounded-2xl bg-white border border-neutral-100 px-4.5 py-3 text-sm dark:bg-neutral-800 dark:border-neutral-700/60 rounded-tl-xs shadow-xs mr-auto">
+                    <div className="flex items-center gap-1.5 py-1">
+                      <span className="h-2 w-2 animate-bounce rounded-full bg-neutral-400"></span>
+                      <span className="h-2 w-2 animate-bounce rounded-full bg-neutral-400 [animation-delay:0.2s]"></span>
+                      <span className="h-2 w-2 animate-bounce rounded-full bg-neutral-400 [animation-delay:0.4s]"></span>
+                    </div>
                   </div>
                 </div>
               </div>
             )}
-          </>
+          </div>
         )}
       </div>
 
@@ -280,7 +346,7 @@ export default function ChatThread({
               <GitFork className="h-3.5 w-3.5 shrink-0" />
               <span className="truncate">
                 Branching from:{' '}
-                <strong className="font-semibold italic">"{selectedNodeSnippet}"</strong>
+                <strong className="font-semibold italic">&quot;{selectedNodeSnippet}&quot;</strong>
               </span>
             </div>
           )}
@@ -301,7 +367,7 @@ export default function ChatThread({
             </div>
           )}
 
-          <div className="relative flex items-center">
+          <div className="relative flex flex-col w-full rounded-2xl border border-neutral-200/80 dark:border-neutral-800/80 bg-neutral-50/50 dark:bg-neutral-900/40 p-2 focus-within:border-neutral-300 dark:focus-within:border-neutral-700 focus-within:bg-white dark:focus-within:bg-neutral-900/80 transition-all duration-200 shadow-xs">
             <textarea
               rows={1}
               value={input}
@@ -312,17 +378,111 @@ export default function ChatThread({
                   handleSubmit(e);
                 }
               }}
-              placeholder="Send a message..."
+              placeholder="Ask anything, @ to mention, / for actions"
               disabled={sending || streaming}
-              className="w-full resize-none rounded-2xl border border-neutral-200 bg-white py-3.5 pl-4 pr-12 text-sm text-neutral-900 shadow-xs focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500 dark:border-neutral-800 dark:bg-neutral-900 dark:text-neutral-50 dark:focus:border-blue-500 max-h-36 font-sans"
+              className="w-full resize-none bg-transparent border-0 outline-hidden focus:ring-0 focus:outline-hidden text-sm text-neutral-900 dark:text-neutral-50 placeholder-neutral-400 dark:placeholder-neutral-500 max-h-36 font-sans px-3 pt-2 pb-2.5"
             />
-            <button
-              type="submit"
-              disabled={!input.trim() || sending || streaming}
-              className="absolute right-2 rounded-xl bg-blue-600 p-2 text-white hover:bg-blue-500 disabled:bg-neutral-100 disabled:text-neutral-400 dark:disabled:bg-neutral-800 dark:disabled:text-neutral-600 transition shadow-xs"
-            >
-              <Send className="h-4 w-4" />
-            </button>
+
+            <div className="flex items-center justify-between border-t border-neutral-100/50 dark:border-neutral-800/30 pt-2 px-1 select-none">
+              <div className="flex items-center gap-1.5">
+                {/* Plus Button */}
+                <button
+                  type="button"
+                  className="p-1.5 rounded-lg text-neutral-400 hover:text-neutral-600 dark:hover:text-neutral-200 hover:bg-neutral-100 dark:hover:bg-neutral-800 transition-colors"
+                  title="Add context"
+                >
+                  <Plus className="h-4.5 w-4.5" />
+                </button>
+
+                {/* Model Selection Dropdown Trigger */}
+                {settings && (
+                  <div className="relative" ref={dropdownRef}>
+                    <button
+                      type="button"
+                      onClick={() => setShowDropdown(!showDropdown)}
+                      className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl border border-neutral-200 dark:border-neutral-800/80 bg-white/50 dark:bg-neutral-950/40 text-xs font-semibold text-neutral-600 dark:text-neutral-300 hover:bg-neutral-100 dark:hover:bg-neutral-800/80 transition-all cursor-pointer select-none"
+                    >
+                      <span>{formatModelName(settings.modelId)}</span>
+                      <ChevronDown
+                        className={`h-3 w-3 transition-transform duration-200 ${
+                          showDropdown ? 'rotate-180' : ''
+                        }`}
+                      />
+                    </button>
+
+                    {showDropdown && (
+                      <div className="absolute left-0 bottom-full mb-2 w-72 rounded-2xl border border-neutral-200/80 bg-white p-2.5 shadow-xl dark:border-neutral-800/80 dark:bg-neutral-900 z-50 animate-in fade-in slide-in-from-bottom-2 duration-200 max-h-[280px] overflow-y-auto scrollbar-thin">
+                        {Object.entries(settings.providerModels || {}).map(([provId, models]) => {
+                          // Filter out models from providers that do not have an API key
+                          if (!isProviderEnabled(provId)) return null;
+
+                          const providerLabel =
+                            provId === 'claude'
+                              ? 'Anthropic'
+                              : provId === 'openai'
+                              ? 'OpenAI'
+                              : 'Google Gemini';
+
+                          return (
+                            <div key={provId} className="space-y-1 py-1">
+                              <div className="px-2 text-[10px] font-bold uppercase tracking-wider text-neutral-400 dark:text-neutral-500">
+                                {providerLabel}
+                              </div>
+                              {models.map((mId) => (
+                                <button
+                                  key={mId}
+                                  type="button"
+                                  onClick={() => {
+                                    updateSettings({
+                                      providerId: provId,
+                                      modelId: mId,
+                                    });
+                                    setShowDropdown(false);
+                                  }}
+                                  className={`w-full flex items-center justify-between px-2.5 py-1.5 rounded-lg text-left text-xs font-medium transition ${
+                                    settings.modelId === mId
+                                      ? 'bg-blue-50 text-blue-600 dark:bg-blue-950/30 dark:text-blue-400'
+                                      : 'text-neutral-700 hover:bg-neutral-100 dark:text-neutral-300 dark:hover:bg-neutral-800/60'
+                                  }`}
+                                >
+                                  <span>{formatModelName(mId)}</span>
+                                  {settings.modelId === mId && <Check className="h-3.5 w-3.5" />}
+                                </button>
+                              ))}
+                            </div>
+                          );
+                        })}
+                      </div>
+                    )}
+                  </div>
+                )}
+              </div>
+
+              {/* Right-aligned Microphone or Send Button */}
+              <div>
+                {input.trim() ? (
+                  <button
+                    type="submit"
+                    disabled={sending || streaming}
+                    className="rounded-full bg-blue-600 p-2 text-white hover:bg-blue-500 disabled:bg-neutral-100 disabled:text-neutral-400 dark:disabled:bg-neutral-800 dark:disabled:text-neutral-600 transition shadow-sm cursor-pointer"
+                    title="Send message"
+                  >
+                    <Send className="h-4 w-4" />
+                  </button>
+                ) : (
+                  <button
+                    type="button"
+                    className="rounded-full bg-neutral-200/60 p-2 text-neutral-500 dark:bg-neutral-800 dark:text-neutral-400 hover:bg-neutral-300/60 dark:hover:bg-neutral-700 transition cursor-pointer"
+                    onClick={() => {
+                      alert('Speech typing functionality is not configured.');
+                    }}
+                    title="Voice input"
+                  >
+                    <Mic className="h-4 w-4" />
+                  </button>
+                )}
+              </div>
+            </div>
           </div>
         </form>
       </div>

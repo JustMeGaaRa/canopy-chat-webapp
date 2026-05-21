@@ -34,5 +34,5 @@ export function useTheme() {
     } else {
       applyTheme(theme);
     }
-  }, [settings?.theme]);
+  }, [settings]);
 }

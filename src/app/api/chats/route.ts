@@ -6,8 +6,8 @@ export async function GET() {
     const repo = getChatRepository();
     const chats = await repo.listChats();
     return NextResponse.json({ chats });
-  } catch (error: any) {
-    return NextResponse.json({ error: error.message }, { status: 500 });
+  } catch (error) {
+    return NextResponse.json({ error: error instanceof Error ? error.message : String(error) }, { status: 500 });
   }
 }
 
@@ -17,7 +17,7 @@ export async function POST(request: Request) {
     const chat = await request.json();
     await repo.createChat(chat);
     return NextResponse.json({ success: true, chat });
-  } catch (error: any) {
-    return NextResponse.json({ error: error.message }, { status: 400 });
+  } catch (error) {
+    return NextResponse.json({ error: error instanceof Error ? error.message : String(error) }, { status: 400 });
   }
 }

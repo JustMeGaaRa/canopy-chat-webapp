@@ -8,6 +8,6 @@ export interface ChatProvider {
   name: string;
   sendMessage(
     messages: ChatMessage[],
-    options?: { stream?: boolean; apiKey?: string }
+    options?: { stream?: boolean; apiKey?: string; modelId?: string }
   ): Promise<ReadableStream<Uint8Array> | string>;
 }
