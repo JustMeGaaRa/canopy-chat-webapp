@@ -1,7 +1,6 @@
 'use client';
 
 import React from 'react';
-import { Bot, User } from 'lucide-react';
 import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
 import rehypeHighlight from 'rehype-highlight';
@@ -22,28 +21,13 @@ export default function MessageBubble({ role, content }: MessageBubbleProps) {
           isUser ? 'items-end' : 'items-start'
         } flex flex-col`}
       >
-        <div className="flex items-center gap-1.5 mb-1.5 px-1">
-          <div
-            className={`rounded-full p-0.5 ${
-              isUser
-                ? 'bg-blue-100 text-blue-600 dark:bg-blue-950/80 dark:text-blue-400'
-                : 'bg-emerald-100 text-emerald-600 dark:bg-emerald-950/80 dark:text-emerald-400'
-            }`}
-          >
-            {isUser ? <User className="h-3 w-3" /> : <Bot className="h-3 w-3" />}
-          </div>
-          <span className="text-[10px] font-bold text-neutral-400 dark:text-neutral-500 uppercase tracking-wider font-sans">
-            {isUser ? 'You' : 'Assistant'}
-          </span>
-        </div>
-
         <div className="flex items-start gap-2 w-full">
           <div
-            className={`rounded-2xl px-4 py-3 text-sm leading-relaxed shadow-xs max-w-full ${
+            className={
               isUser
-                ? 'bg-blue-600 text-white rounded-tr-xs ml-auto'
-                : 'bg-white text-neutral-800 dark:bg-neutral-800 dark:text-neutral-100 border border-neutral-200/60 dark:border-neutral-700/60 rounded-tl-xs mr-auto'
-            }`}
+                ? 'rounded-2xl px-4 py-3 text-sm leading-relaxed shadow-xs max-w-full bg-blue-600 text-white rounded-tr-xs ml-auto'
+                : 'w-full text-sm leading-relaxed text-neutral-800 dark:text-neutral-100'
+            }
           >
           {isUser ? (
             <div className="whitespace-pre-wrap select-text break-words font-sans">{content}</div>

@@ -1,12 +1,23 @@
 'use client';
 
 import React, { useRef, useEffect, useMemo } from 'react';
-import * as d3Zoom from 'd3-zoom';
+import { zoom, zoomIdentity } from 'd3-zoom';
+import type { ZoomBehavior } from 'd3-zoom';
 import { select } from 'd3-selection';
 import { Chat, ChatNode } from '@/lib/storage/types';
 import { useSettings } from '@/hooks/useSettings';
 import { computeRadialLayout } from '@/lib/graph-layout';
-import { GitFork, ZoomIn, ZoomOut, Target, ChevronLeft, ChevronRight } from 'lucide-react';
+import { GitFork, ZoomIn, ZoomOut, Target } from 'lucide-react';
+
+const CollapseIcon = () => (
+  <svg viewBox="0 0 24 24" className="h-5 w-5 fill-none stroke-current" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+    <rect x="3" y="3" width="18" height="18" rx="2" />
+    <line x1="15" y1="3" x2="15" y2="21" />
+    <path d="M8 9l3 3-3 3" />
+  </svg>
+);
+
+
 
 interface GraphViewProps {
   activeChat: Chat | null;
@@ -28,7 +39,8 @@ export default function GraphView({
   const { settings } = useSettings();
   const svgRef = useRef<SVGSVGElement | null>(null);
   const gRef = useRef<SVGGElement | null>(null);
-  const zoomBehaviorRef = useRef<d3Zoom.ZoomBehavior<SVGSVGElement, unknown> | null>(null);
+  const containerRef = useRef<HTMLDivElement | null>(null);
+  const zoomBehaviorRef = useRef<ZoomBehavior<SVGSVGElement, unknown> | null>(null);
 
   const ringSpacing = settings?.graphRingSpacing || 90;
 
@@ -117,8 +129,7 @@ export default function GraphView({
     const g = gRef.current;
     if (!svg || !g) return;
 
-    const zoomBehavior = d3Zoom
-      .zoom<SVGSVGElement, unknown>()
+    const zoomBehavior = zoom<SVGSVGElement, unknown>()
       .scaleExtent([0.15, 3])
       .on('zoom', (event) => {
         select(g).attr('transform', event.transform.toString());
@@ -129,25 +140,34 @@ export default function GraphView({
     d3Svg.call(zoomBehavior);
 
     const centerGraph = () => {
-      const width = svg.clientWidth || 400;
-      const height = svg.clientHeight || 500;
-      const initialTransform = d3Zoom.zoomIdentity.translate(width / 2, height / 2).scale(1.0);
+      const container = containerRef.current;
+      if (!container) return;
+      const width = container.clientWidth || 400;
+      const height = container.clientHeight || 500;
+      const initialTransform = zoomIdentity.translate(width / 2, height / 2).scale(1.0);
       d3Svg.call(zoomBehavior.transform, initialTransform);
     };
 
     centerGraph();
-    const timer = setTimeout(centerGraph, 50);
+    const timer = setTimeout(centerGraph, 350); // Wait for transition animation to end (300ms)
 
     const resizeObserver = new ResizeObserver(() => {
-      if (svg.clientWidth > 0 && svg.clientHeight > 0) centerGraph();
+      const container = containerRef.current;
+      if (container && container.clientWidth > 0 && container.clientHeight > 0) {
+        centerGraph();
+      }
     });
-    resizeObserver.observe(svg);
+
+    const container = containerRef.current;
+    if (container) {
+      resizeObserver.observe(container);
+    }
 
     return () => {
       clearTimeout(timer);
       resizeObserver.disconnect();
     };
-  }, [activeChat?.id]);
+  }, [activeChat?.id, isCollapsed]);
 
   const handleZoomIn = () => {
     const svg = svgRef.current;
@@ -167,44 +187,16 @@ export default function GraphView({
     const svg = svgRef.current;
     const zb = zoomBehaviorRef.current;
     if (!svg || !zb) return;
-    const width = svg.clientWidth || 400;
-    const height = svg.clientHeight || 500;
-    select(svg).call(zb.transform, d3Zoom.zoomIdentity.translate(width / 2, height / 2).scale(1.0));
+    const container = containerRef.current;
+    if (!container) return;
+    const width = container.clientWidth || 400;
+    const height = container.clientHeight || 500;
+    select(svg).call(zb.transform, zoomIdentity.translate(width / 2, height / 2).scale(1.0));
   };
 
   // ── Collapsed rail ──────────────────────────────────────────────────────────
   if (isCollapsed) {
-    return (
-      <div className="flex h-full w-[60px] flex-col items-center border-l border-neutral-200 bg-neutral-50/70 py-4 dark:border-neutral-800 dark:bg-neutral-900/60 select-none">
-        <button
-          onClick={onToggleCollapse}
-          className="rounded-lg p-2 text-neutral-500 hover:bg-neutral-100 dark:text-neutral-400 dark:hover:bg-neutral-800/50 transition cursor-pointer"
-          title="Expand Graph"
-        >
-          <ChevronLeft className="h-4.5 w-4.5" />
-        </button>
-        <div className="flex flex-1 flex-col items-center justify-center gap-2 mt-8">
-          <GitFork className="h-5 w-5 text-neutral-400 dark:text-neutral-500 animate-pulse" />
-          <span className="text-[10px] font-bold text-neutral-400 dark:text-neutral-500 uppercase tracking-widest [writing-mode:vertical-lr] select-none mt-2">
-            Mind Map
-          </span>
-        </div>
-      </div>
-    );
-  }
-
-  // ── Empty state ─────────────────────────────────────────────────────────────
-  if (!activeChat || userNodes.length === 0) {
-    return (
-      <div className="flex h-full items-center justify-center bg-neutral-50/50 dark:bg-neutral-900/30 p-6 text-center select-none">
-        <div className="max-w-xs space-y-2">
-          <GitFork className="mx-auto h-8 w-8 text-neutral-300 dark:text-neutral-700" />
-          <p className="text-xs font-semibold text-neutral-400 dark:text-neutral-500 font-sans">
-            No active tree. Start typing in the chat to generate a radial conversation layout.
-          </p>
-        </div>
-      </div>
-    );
+    return null;
   }
 
   // ── Concentric rings ────────────────────────────────────────────────────────
@@ -230,58 +222,73 @@ export default function GraphView({
   };
 
   // ── Main render ─────────────────────────────────────────────────────────────
+  const isEmpty = !activeChat || userNodes.length === 0;
+
   return (
-    <div className="relative h-full w-full overflow-hidden bg-neutral-50/30 dark:bg-neutral-950/20 select-none">
+    <div ref={containerRef} className="relative h-full w-full overflow-hidden bg-neutral-50/30 dark:bg-neutral-950/20 select-none">
       {/* Dot-grid background — behind everything */}
       <div className="absolute inset-0 bg-[radial-gradient(#e5e7eb_1px,transparent_1px)] dark:bg-[radial-gradient(#27272a_1px,transparent_1px)] [background-size:16px_16px] pointer-events-none z-0" />
 
-      {/* Collapse button — z-20 to sit above SVG */}
-      {onToggleCollapse && (
-        <button
-          onClick={onToggleCollapse}
-          className="absolute top-4 left-4 z-20 hidden lg:flex items-center justify-center rounded-xl bg-white border border-neutral-200/60 p-2 text-neutral-500 hover:bg-neutral-50 dark:bg-neutral-900 dark:border-neutral-800 dark:text-neutral-400 dark:hover:bg-neutral-800 transition shadow-sm cursor-pointer"
-          title="Collapse Graph"
-        >
-          <ChevronRight className="h-4.5 w-4.5" />
-        </button>
-      )}
-
-      {/* Zoom / centre controls — z-20 */}
-      <div className="absolute bottom-4 right-4 z-20 flex flex-col sm:flex-row gap-2 pointer-events-auto">
-        {onCloseMobile && (
-          <button
-            onClick={onCloseMobile}
-            className="rounded-xl bg-white border border-neutral-200/60 px-3 py-2 text-xs font-semibold text-neutral-500 hover:bg-neutral-50 dark:bg-neutral-900 dark:border-neutral-800 dark:text-neutral-400 dark:hover:bg-neutral-800 transition shadow-sm md:hidden"
-            title="Back to Chat"
-          >
-            Close Graph
-          </button>
-        )}
-
-        <div className="flex bg-white border border-neutral-200/60 dark:bg-neutral-900 dark:border-neutral-800 rounded-xl overflow-hidden shadow-sm divide-x divide-neutral-200/60 dark:divide-neutral-800">
-          <button
-            onClick={handleZoomIn}
-            className="p-2 text-neutral-500 hover:bg-neutral-50 dark:text-neutral-400 dark:hover:bg-neutral-800 transition cursor-pointer"
-            title="Zoom In"
-          >
-            <ZoomIn className="h-4.5 w-4.5" />
-          </button>
-          <button
-            onClick={handleZoomOut}
-            className="p-2 text-neutral-500 hover:bg-neutral-50 dark:text-neutral-400 dark:hover:bg-neutral-800 transition cursor-pointer"
-            title="Zoom Out"
-          >
-            <ZoomOut className="h-4.5 w-4.5" />
-          </button>
-          <button
-            onClick={handleCenter}
-            className="p-2 text-neutral-500 hover:bg-neutral-50 dark:text-neutral-400 dark:hover:bg-neutral-800 transition cursor-pointer"
-            title="Centre & Reset Zoom"
-          >
-            <Target className="h-4.5 w-4.5" />
-          </button>
+      {isEmpty ? (
+        <div className="absolute inset-0 z-20 flex h-full items-center justify-center bg-neutral-50/50 dark:bg-neutral-900/30 p-6 text-center select-none">
+          <div className="max-w-xs space-y-2">
+            <GitFork className="mx-auto h-8 w-8 text-neutral-300 dark:text-neutral-700" />
+            <p className="text-xs font-semibold text-neutral-400 dark:text-neutral-500 font-sans">
+              No active tree. Start typing in the chat to generate a radial conversation layout.
+            </p>
+          </div>
         </div>
-      </div>
+      ) : (
+        <>
+          {/* Collapse button — z-20 to sit above SVG */}
+          {onToggleCollapse && (
+            <button
+              onClick={onToggleCollapse}
+              className="absolute top-3 left-3 z-20 hidden lg:flex items-center justify-center rounded-full p-2 text-neutral-500 hover:bg-neutral-200/50 hover:text-neutral-900 dark:text-neutral-400 dark:hover:bg-[#2c2d30]/60 dark:hover:text-neutral-100 transition cursor-pointer"
+              title="Закрити бічну панель"
+            >
+              <CollapseIcon />
+            </button>
+          )}
+
+          {/* Zoom / centre controls — z-20 */}
+          <div className="absolute bottom-4 right-4 z-20 flex flex-col sm:flex-row gap-2 pointer-events-auto">
+            {onCloseMobile && (
+              <button
+                onClick={onCloseMobile}
+                className="rounded-xl bg-white border border-neutral-200/60 px-3 py-2 text-xs font-semibold text-neutral-500 hover:bg-neutral-50 dark:bg-neutral-900 dark:border-neutral-800 dark:text-neutral-400 dark:hover:bg-neutral-800 transition shadow-sm md:hidden"
+                title="Back to Chat"
+              >
+                Close Graph
+              </button>
+            )}
+
+            <div className="flex bg-white border border-neutral-200/60 dark:bg-neutral-900 dark:border-neutral-800 rounded-xl overflow-hidden shadow-sm divide-x divide-neutral-200/60 dark:divide-neutral-800">
+              <button
+                onClick={handleZoomIn}
+                className="p-2 text-neutral-500 hover:bg-neutral-50 dark:text-neutral-400 dark:hover:bg-neutral-800 transition cursor-pointer"
+                title="Zoom In"
+              >
+                <ZoomIn className="h-4.5 w-4.5" />
+              </button>
+              <button
+                onClick={handleZoomOut}
+                className="p-2 text-neutral-500 hover:bg-neutral-50 dark:text-neutral-400 dark:hover:bg-neutral-800 transition cursor-pointer"
+                title="Zoom Out"
+              >
+                <ZoomOut className="h-4.5 w-4.5" />
+              </button>
+              <button
+                onClick={handleCenter}
+                className="p-2 text-neutral-500 hover:bg-neutral-50 dark:text-neutral-400 dark:hover:bg-neutral-800 transition cursor-pointer"
+                title="Centre & Reset Zoom"
+              >
+                <Target className="h-4.5 w-4.5" />
+              </button>
+            </div>
+          </div>
+        </>
+      )}
 
       {/* SVG — z-10, sits above dot grid but below buttons */}
       <svg

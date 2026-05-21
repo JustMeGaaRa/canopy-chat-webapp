@@ -9,7 +9,7 @@ export class GeminiProvider implements ChatProvider {
     options?: { stream?: boolean; apiKey?: string; modelId?: string }
   ): Promise<ReadableStream<Uint8Array> | string> {
     const apiKey = options?.apiKey || process.env.GEMINI_API_KEY;
-    const model = options?.modelId || 'gemini-2.5-flash';
+    const model = options?.modelId || 'gemini-3.5-flash';
 
     if (!apiKey) {
       throw new Error('GEMINI_API_KEY is missing');

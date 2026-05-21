@@ -32,8 +32,9 @@ export default function Home() {
 
   // Resizing and collapsing states for Graph View panel
   const [graphWidth, setGraphWidth] = useState(400);
-  const [isGraphCollapsed, setIsGraphCollapsed] = useState(false);
+  const [isGraphCollapsed, setIsGraphCollapsed] = useState(true);
   const [isResizing, setIsResizing] = useState(false);
+  const [isMobile, setIsMobile] = useState(true);
 
   const startResize = (e: React.MouseEvent) => {
     e.preventDefault();
@@ -45,7 +46,8 @@ export default function Home() {
 
     const handleMouseMove = (e: MouseEvent) => {
       const newWidth = window.innerWidth - e.clientX;
-      if (newWidth >= 280 && newWidth <= 700) {
+      const maxWidth = window.innerWidth * 0.5;
+      if (newWidth >= 280 && newWidth <= maxWidth) {
         setGraphWidth(newWidth);
       }
     };
@@ -66,6 +68,9 @@ export default function Home() {
   // Handle auto-collapsing sidebar on medium screens (768px - 1024px)
   useEffect(() => {
     const handleResize = () => {
+      setIsMobile(window.innerWidth < 768);
+      const maxWidth = window.innerWidth * 0.5;
+      setGraphWidth((prev) => Math.min(prev, maxWidth));
       if (window.innerWidth >= 768 && window.innerWidth <= 1024) {
         setIsSidebarCollapsed(true);
       } else if (window.innerWidth > 1024) {
@@ -78,7 +83,7 @@ export default function Home() {
   }, []);
 
   return (
-    <main className="flex h-screen w-screen overflow-hidden bg-white text-neutral-900 dark:bg-neutral-950 dark:text-neutral-50 transition-colors duration-200">
+    <main className="flex h-screen w-screen overflow-hidden bg-white text-neutral-900 dark:bg-[#131314] dark:text-neutral-50 transition-colors duration-200">
       {/* Mobile Left Drawer Backdrop */}
       {isLeftMobileOpen && (
         <div
@@ -135,6 +140,8 @@ export default function Home() {
             onOpenGraphMobile={() => setIsRightMobileOpen(true)}
             error={error}
             setError={setError}
+            isGraphCollapsed={isGraphCollapsed}
+            onToggleGraph={() => setIsGraphCollapsed(!isGraphCollapsed)}
           />
         </div>
 
@@ -142,14 +149,14 @@ export default function Home() {
         {!isGraphCollapsed && (
           <div
             onMouseDown={startResize}
-            className="hidden lg:block w-1 hover:w-1.5 shrink-0 cursor-col-resize bg-neutral-200/60 dark:bg-neutral-800/80 hover:bg-blue-500/80 dark:hover:bg-blue-500/85 active:bg-blue-600 transition-all duration-150 z-20"
+            className="hidden lg:block w-1 hover:w-1.5 shrink-0 cursor-col-resize bg-transparent hover:bg-blue-500/80 dark:hover:bg-blue-500/85 active:bg-blue-600 transition-all duration-150 z-20"
           />
         )}
 
         {/* Right Panel: Radial Tree Graph Map */}
         <div
-          style={{ width: isGraphCollapsed ? '60px' : `${graphWidth}px` }}
-          className={`fixed inset-x-0 bottom-0 h-[50vh] z-30 bg-white dark:bg-neutral-950 border-t border-neutral-200 dark:border-neutral-800 transition-transform duration-300 md:static md:h-full md:translate-y-0 md:border-t-0 md:border-l lg:shrink-0 ${
+          style={{ width: isMobile ? '100%' : (isGraphCollapsed ? '0px' : `${graphWidth}px`) }}
+          className={`fixed inset-x-0 bottom-0 h-[50vh] z-30 bg-white dark:bg-[#131314] border-t border-neutral-200 dark:border-neutral-800 transition-transform duration-300 md:static md:h-full md:translate-y-0 md:border-t-0 lg:shrink-0 overflow-hidden ${
             isRightMobileOpen ? 'translate-y-0' : 'translate-y-full'
           } ${isResizing ? '' : 'transition-all duration-300'}`}
         >

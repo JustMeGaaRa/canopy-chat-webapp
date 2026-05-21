@@ -9,7 +9,7 @@ export class OpenAIProvider implements ChatProvider {
     options?: { stream?: boolean; apiKey?: string; modelId?: string }
   ): Promise<ReadableStream<Uint8Array> | string> {
     const apiKey = options?.apiKey || process.env.OPENAI_API_KEY;
-    const model = options?.modelId || 'gpt-4o';
+    const model = options?.modelId || 'gpt-5.5';
 
     if (!apiKey) {
       throw new Error('OPENAI_API_KEY is missing');

@@ -10,7 +10,7 @@ export class ClaudeProvider implements ChatProvider {
     options?: { stream?: boolean; apiKey?: string; modelId?: string }
   ): Promise<ReadableStream<Uint8Array> | string> {
     const apiKey = options?.apiKey || process.env.ANTHROPIC_API_KEY;
-    const model = options?.modelId || 'claude-3-5-sonnet-latest';
+    const model = options?.modelId || 'claude-sonnet-4-6';
     if (!apiKey) {
       throw new Error('ANTHROPIC_API_KEY is missing');
     }

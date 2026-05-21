@@ -18,22 +18,38 @@ interface ChatThreadProps {
   onOpenGraphMobile: () => void;
   error: string | null;
   setError: (err: string | null) => void;
+  isGraphCollapsed?: boolean;
+  onToggleGraph?: () => void;
 }
 
+const CollapseIcon = () => (
+  <svg viewBox="0 0 24 24" className="h-4.5 w-4.5 fill-none stroke-current" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+    <rect x="3" y="3" width="18" height="18" rx="2" />
+    <line x1="15" y1="3" x2="15" y2="21" />
+    <path d="M8 9l3 3-3 3" />
+  </svg>
+);
+
+const ExpandIcon = () => (
+  <svg viewBox="0 0 24 24" className="h-4.5 w-4.5 fill-none stroke-current" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+    <rect x="3" y="3" width="18" height="18" rx="2" />
+    <line x1="15" y1="3" x2="15" y2="21" />
+    <path d="M11 15l-3-3 3-3" />
+  </svg>
+);
+
 const MODEL_LABEL_MAP: Record<string, string> = {
-  'claude-3-7-sonnet-latest': 'Claude 3.7 Sonnet',
-  'claude-3-5-sonnet-latest': 'Claude 3.5 Sonnet',
-  'claude-3-5-haiku-latest': 'Claude 3.5 Haiku',
-  'claude-3-opus-latest': 'Claude 3 Opus',
-  'gpt-4o': 'GPT-4o',
-  'gpt-4o-mini': 'GPT-4o Mini',
-  'o1': 'OpenAI o1',
-  'o3-mini': 'OpenAI o3-mini',
-  'gemini-3.5-flash-medium': 'Gemini 3.5 Flash (Medium)',
-  'gemini-2.5-pro': 'Gemini 2.5 Pro',
-  'gemini-2.5-flash': 'Gemini 2.5 Flash',
-  'gemini-1.5-pro': 'Gemini 1.5 Pro',
-  'gemini-1.5-flash': 'Gemini 1.5 Flash',
+  'claude-opus-4-7': 'Claude 4.7 Opus',
+  'claude-sonnet-4-6': 'Claude 4.6 Sonnet',
+  'claude-haiku-4-5': 'Claude 4.5 Haiku',
+  'gpt-5.5': 'GPT-5.5',
+  'gpt-5.5-pro': 'GPT-5.5 Pro',
+  'gpt-5.4-mini': 'GPT-5.4 Mini',
+  'gpt-5.4-nano': 'GPT-5.4 Nano',
+  'gemini-3.5-flash': 'Gemini 3.5 Flash',
+  'gemini-3.1-pro': 'Gemini 3.1 Pro',
+  'gemini-3.1-flash-lite': 'Gemini 3.1 Flash-Lite',
+  'gemini-omni-flash': 'Gemini Omni Flash',
 };
 
 const formatModelName = (modelId: string) => {
@@ -56,6 +72,8 @@ export default function ChatThread({
   onOpenGraphMobile,
   error,
   setError,
+  isGraphCollapsed = true,
+  onToggleGraph,
 }: ChatThreadProps) {
   const { settings, updateSettings, hasKey, envKeys } = useSettings();
   const [input, setInput] = useState('');
@@ -192,7 +210,7 @@ export default function ChatThread({
         : 'GEMINI_API_KEY';
 
     return (
-      <div className="flex h-full flex-col bg-white dark:bg-neutral-950">
+      <div className="flex h-full flex-col bg-white dark:bg-[#131314]">
         {/* Mobile Header */}
         <div className="flex h-14 items-center justify-between px-4 border-b border-neutral-200/60 dark:border-neutral-800/60 md:hidden shrink-0">
           <button
@@ -241,9 +259,9 @@ export default function ChatThread({
   }
 
   return (
-    <div className="flex h-full flex-col bg-white dark:bg-neutral-950">
+    <div className="flex h-full flex-col bg-white dark:bg-[#131314]">
       {/* Header bar */}
-      <div className="flex h-14 items-center justify-between px-4 border-b border-neutral-200/60 dark:border-neutral-800/60 shrink-0 select-none bg-white/80 dark:bg-neutral-950/80 backdrop-blur-md z-10">
+      <div className="flex h-14 items-center justify-between px-4 border-b border-neutral-200/60 dark:border-neutral-800/60 shrink-0 select-none bg-white/80 dark:bg-[#131314]/80 backdrop-blur-md z-10">
         <div className="flex items-center gap-2">
           {/* Mobile Sidebar Hamburger */}
           <button
@@ -267,6 +285,26 @@ export default function ChatThread({
           >
             <Network className="h-5 w-5" />
           </button>
+
+          {/* Desktop Graph View Toggle */}
+          {onToggleGraph && (
+            <button
+              onClick={onToggleGraph}
+              className={`group hidden md:flex h-8 w-8 items-center justify-center rounded-lg transition cursor-pointer ${
+                isGraphCollapsed
+                  ? 'text-neutral-500 hover:bg-neutral-100 hover:text-neutral-900 dark:text-neutral-400 dark:hover:bg-neutral-800 dark:hover:text-neutral-100'
+                  : 'bg-neutral-200/50 text-neutral-800 hover:bg-neutral-200 dark:bg-neutral-800/50 dark:text-neutral-200 dark:hover:bg-neutral-800'
+              }`}
+              title={isGraphCollapsed ? 'Відкрити бічну панель' : 'Закрити бічну панель'}
+            >
+              <div className="group-hover:hidden">
+                <GitFork className="h-4.5 w-4.5" />
+              </div>
+              <div className="hidden group-hover:block">
+                {isGraphCollapsed ? <ExpandIcon /> : <CollapseIcon />}
+              </div>
+            </button>
+          )}
 
           <button
             onClick={onOpenSettings}
@@ -315,15 +353,7 @@ export default function ChatThread({
             {streaming && !streamingText && (
               <div className="grid grid-cols-12 gap-x-4 w-full mb-5">
                 <div className="col-span-12 flex flex-col items-start">
-                  <div className="flex items-center gap-1 mb-1.5 px-1">
-                    <div className="rounded-full p-0.5 bg-emerald-100 text-emerald-600 dark:bg-emerald-950 dark:text-emerald-400">
-                      <Bot className="h-3 w-3" />
-                    </div>
-                    <span className="text-[10px] font-bold text-neutral-400 dark:text-neutral-500 uppercase tracking-wider font-sans">
-                      Assistant
-                    </span>
-                  </div>
-                  <div className="rounded-2xl bg-white border border-neutral-100 px-4.5 py-3 text-sm dark:bg-neutral-800 dark:border-neutral-700/60 rounded-tl-xs shadow-xs mr-auto">
+                  <div className="w-full text-sm py-1.5 mr-auto">
                     <div className="flex items-center gap-1.5 py-1">
                       <span className="h-2 w-2 animate-bounce rounded-full bg-neutral-400"></span>
                       <span className="h-2 w-2 animate-bounce rounded-full bg-neutral-400 [animation-delay:0.2s]"></span>
@@ -338,7 +368,7 @@ export default function ChatThread({
       </div>
 
       {/* Message input panel */}
-      <div className="border-t border-neutral-200/60 p-4 dark:border-neutral-800/60 bg-white dark:bg-neutral-950">
+      <div className="border-t border-neutral-200/60 p-4 dark:border-neutral-800/60 bg-white dark:bg-[#131314]">
         <form onSubmit={handleSubmit} className="max-w-3xl mx-auto space-y-2">
           {/* Branch notice indicator */}
           {!isNewChatMode && !isLatestLeaf && selectedNodeSnippet && (
