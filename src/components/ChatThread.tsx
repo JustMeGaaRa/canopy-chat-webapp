@@ -4,7 +4,21 @@ import React, { useState, useRef, useEffect } from 'react';
 import { Chat, ChatNode } from '@/lib/storage/types';
 import MessageBubble from './MessageBubble';
 import { useSettings } from '@/hooks/useSettings';
-import { Send, GitFork, AlertCircle, Settings, HelpCircle, Menu, Network, Bot, Plus, Mic, ChevronDown, Check, Bookmark } from 'lucide-react';
+import {
+  Send,
+  GitFork,
+  AlertCircle,
+  Settings,
+  HelpCircle,
+  Menu,
+  Network,
+  Bot,
+  Plus,
+  Mic,
+  ChevronDown,
+  Check,
+  Bookmark,
+} from 'lucide-react';
 
 interface ChatThreadProps {
   activeChat: Chat | null;
@@ -25,7 +39,13 @@ interface ChatThreadProps {
 }
 
 const CollapseIcon = () => (
-  <svg viewBox="0 0 24 24" className="h-4.5 w-4.5 fill-none stroke-current" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+  <svg
+    viewBox="0 0 24 24"
+    className="h-4.5 w-4.5 fill-none stroke-current"
+    strokeWidth="2"
+    strokeLinecap="round"
+    strokeLinejoin="round"
+  >
     <rect x="3" y="3" width="18" height="18" rx="2" />
     <line x1="15" y1="3" x2="15" y2="21" />
     <path d="M8 9l3 3-3 3" />
@@ -33,7 +53,13 @@ const CollapseIcon = () => (
 );
 
 const ExpandIcon = () => (
-  <svg viewBox="0 0 24 24" className="h-4.5 w-4.5 fill-none stroke-current" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+  <svg
+    viewBox="0 0 24 24"
+    className="h-4.5 w-4.5 fill-none stroke-current"
+    strokeWidth="2"
+    strokeLinecap="round"
+    strokeLinejoin="round"
+  >
     <rect x="3" y="3" width="18" height="18" rx="2" />
     <line x1="15" y1="3" x2="15" y2="21" />
     <path d="M11 15l-3-3 3-3" />
@@ -304,14 +330,14 @@ export default function ChatThread({
       activeProvider === 'claude'
         ? 'Anthropic Claude'
         : activeProvider === 'openai'
-        ? 'OpenAI'
-        : 'Google Gemini';
+          ? 'OpenAI'
+          : 'Google Gemini';
     const envVarName =
       activeProvider === 'claude'
         ? 'ANTHROPIC_API_KEY'
         : activeProvider === 'openai'
-        ? 'OPENAI_API_KEY'
-        : 'GEMINI_API_KEY';
+          ? 'OPENAI_API_KEY'
+          : 'GEMINI_API_KEY';
 
     return (
       <div className="flex h-full flex-col bg-white dark:bg-[#131314]">
@@ -421,8 +447,8 @@ export default function ChatThread({
                 Welcome to Canopy
               </h2>
               <p className="text-sm text-neutral-400 dark:text-neutral-500 max-w-sm font-sans leading-relaxed">
-                Start chatting below. You can click on any message or node in the radial graph on the
-                right to branch out and create parallel lines of conversation.
+                Start chatting below. You can click on any message or node in the radial graph on
+                the right to branch out and create parallel lines of conversation.
               </p>
             </div>
           ) : (
@@ -474,8 +500,8 @@ export default function ChatThread({
                   positions[node.id] !== undefined
                     ? positions[node.id]
                     : pathNodes.length > 1
-                    ? (index / (pathNodes.length - 1)) * 100
-                    : 50;
+                      ? (index / (pathNodes.length - 1)) * 100
+                      : 50;
 
                 return (
                   <TimelinePoint
@@ -575,8 +601,8 @@ export default function ChatThread({
                             provId === 'claude'
                               ? 'Anthropic'
                               : provId === 'openai'
-                              ? 'OpenAI'
-                              : 'Google Gemini';
+                                ? 'OpenAI'
+                                : 'Google Gemini';
 
                           return (
                             <div key={provId} className="space-y-1 py-1">

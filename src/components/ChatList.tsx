@@ -25,15 +25,18 @@ const SparkleIcon = () => (
         <stop offset="100%" stopColor="#F3AF3D" />
       </linearGradient>
     </defs>
-    <path
-      fill="url(#gemini-sparkle)"
-      d="M12 2Q12 12 22 12 Q12 12 12 22 Q12 12 2 12 Q12 12 12 2"
-    />
+    <path fill="url(#gemini-sparkle)" d="M12 2Q12 12 22 12 Q12 12 12 22 Q12 12 2 12 Q12 12 12 2" />
   </svg>
 );
 
 const CollapseIcon = () => (
-  <svg viewBox="0 0 24 24" className="h-5 w-5 fill-none stroke-current" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+  <svg
+    viewBox="0 0 24 24"
+    className="h-5 w-5 fill-none stroke-current"
+    strokeWidth="2"
+    strokeLinecap="round"
+    strokeLinejoin="round"
+  >
     <rect x="3" y="3" width="18" height="18" rx="2" />
     <line x1="9" y1="3" x2="9" y2="21" />
     <path d="M16 15l-3-3 3-3" />
@@ -41,7 +44,13 @@ const CollapseIcon = () => (
 );
 
 const ExpandIcon = () => (
-  <svg viewBox="0 0 24 24" className="h-5 w-5 fill-none stroke-current" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+  <svg
+    viewBox="0 0 24 24"
+    className="h-5 w-5 fill-none stroke-current"
+    strokeWidth="2"
+    strokeLinecap="round"
+    strokeLinejoin="round"
+  >
     <rect x="3" y="3" width="18" height="18" rx="2" />
     <line x1="9" y1="3" x2="9" y2="21" />
     <path d="M13 9l3 3-3 3" />
@@ -90,7 +99,7 @@ export default function ChatList({
           </div>
           <button
             onClick={onToggleCollapse}
-            className="rounded-full p-2 text-neutral-500 hover:bg-neutral-200/50 hover:text-neutral-900 dark:text-neutral-400 dark:hover:bg-[#2c2d30]/60 dark:hover:text-neutral-100 transition cursor-pointer"
+            className="hidden md:block rounded-full p-2 text-neutral-500 hover:bg-neutral-200/50 hover:text-neutral-900 dark:text-neutral-400 dark:hover:bg-[#2c2d30]/60 dark:hover:text-neutral-100 transition cursor-pointer"
             title="Закрити бічну панель"
           >
             <CollapseIcon />

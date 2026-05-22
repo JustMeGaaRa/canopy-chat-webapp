@@ -1,7 +1,8 @@
 import { Chat, ChatMeta, ChatRepository } from './types';
 
 // Safe check for browser environment and OPFS availability
-const isBrowser = typeof window !== 'undefined' && typeof navigator !== 'undefined' && !!navigator.storage;
+const isBrowser =
+  typeof window !== 'undefined' && typeof navigator !== 'undefined' && !!navigator.storage;
 
 async function getChatsDirectory(): Promise<FileSystemDirectoryHandle | null> {
   if (!isBrowser) return null;
@@ -14,7 +15,11 @@ async function getChatsDirectory(): Promise<FileSystemDirectoryHandle | null> {
   }
 }
 
-async function readJsonFile<T>(dir: FileSystemDirectoryHandle, filename: string, defaultValue: T): Promise<T> {
+async function readJsonFile<T>(
+  dir: FileSystemDirectoryHandle,
+  filename: string,
+  defaultValue: T
+): Promise<T> {
   try {
     const fileHandle = await dir.getFileHandle(filename);
     const file = await fileHandle.getFile();
@@ -25,7 +30,11 @@ async function readJsonFile<T>(dir: FileSystemDirectoryHandle, filename: string,
   }
 }
 
-async function writeJsonFile<T>(dir: FileSystemDirectoryHandle, filename: string, data: T): Promise<void> {
+async function writeJsonFile<T>(
+  dir: FileSystemDirectoryHandle,
+  filename: string,
+  data: T
+): Promise<void> {
   const fileHandle = await dir.getFileHandle(filename, { create: true });
   const writable = await fileHandle.createWritable();
   await writable.write(JSON.stringify(data, null, 2));

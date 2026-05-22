@@ -60,9 +60,7 @@ export class OpenAIProvider implements ChatProvider {
 
     if (!response.ok) {
       const errorData = await response.json().catch(() => ({}));
-      throw new Error(
-        errorData.error?.message || `OpenAI API returned status ${response.status}`
-      );
+      throw new Error(errorData.error?.message || `OpenAI API returned status ${response.status}`);
     }
 
     if (options?.stream) {

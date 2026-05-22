@@ -77,7 +77,7 @@ export default function SettingsModal({ isOpen, onClose }: SettingsModalProps) {
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm transition-all duration-300">
-      <div className="relative w-full max-w-md max-h-[90vh] flex flex-col overflow-hidden rounded-2xl border border-neutral-200 bg-white shadow-2xl transition-all dark:border-neutral-800 dark:bg-neutral-900 mx-4 sm:mx-0">
+      <div className="relative w-full max-w-md max-h-[90dvh] flex flex-col overflow-hidden rounded-2xl border border-neutral-200 bg-white shadow-2xl transition-all dark:border-neutral-800 dark:bg-neutral-900 mx-4 sm:mx-0">
         {/* Header */}
         <div className="flex items-center justify-between border-b border-neutral-100 px-6 pt-6 pb-4 dark:border-neutral-800 shrink-0">
           <div className="flex items-center gap-2">
@@ -156,8 +156,8 @@ export default function SettingsModal({ isOpen, onClose }: SettingsModalProps) {
                     {localProviderId === 'claude'
                       ? 'Anthropic API Key'
                       : localProviderId === 'openai'
-                      ? 'OpenAI API Key'
-                      : 'Gemini API Key'}
+                        ? 'OpenAI API Key'
+                        : 'Gemini API Key'}
                   </label>
                   {envKeys?.[localProviderId] && (
                     <span className="text-[10px] bg-emerald-100 text-emerald-800 dark:bg-emerald-950/50 dark:text-emerald-400 px-1.5 py-0.5 rounded font-semibold">
@@ -171,8 +171,8 @@ export default function SettingsModal({ isOpen, onClose }: SettingsModalProps) {
                     localProviderId === 'claude'
                       ? 'Claude'
                       : localProviderId === 'openai'
-                      ? 'OpenAI'
-                      : 'Gemini'
+                        ? 'OpenAI'
+                        : 'Gemini'
                   }...`}
                   value={localProviderKeys[localProviderId] || ''}
                   onChange={(e) => {

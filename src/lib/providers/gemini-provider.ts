@@ -46,24 +46,25 @@ export class GeminiProvider implements ChatProvider {
     }));
 
     // Use Gemini's OpenAI-compatible endpoint
-    const response = await fetch('https://generativelanguage.googleapis.com/v1beta/openai/v1/chat/completions', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        Authorization: `Bearer ${apiKey}`,
-      },
-      body: JSON.stringify({
-        model,
-        messages: formattedMessages,
-        stream: !!options?.stream,
-      }),
-    });
+    const response = await fetch(
+      'https://generativelanguage.googleapis.com/v1beta/openai/v1/chat/completions',
+      {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${apiKey}`,
+        },
+        body: JSON.stringify({
+          model,
+          messages: formattedMessages,
+          stream: !!options?.stream,
+        }),
+      }
+    );
 
     if (!response.ok) {
       const errorData = await response.json().catch(() => ({}));
-      throw new Error(
-        errorData.error?.message || `Gemini API returned status ${response.status}`
-      );
+      throw new Error(errorData.error?.message || `Gemini API returned status ${response.status}`);
     }
 
     if (options?.stream) {

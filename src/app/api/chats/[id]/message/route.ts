@@ -26,8 +26,8 @@ export async function POST(request: Request, { params }: { params: Promise<{ id:
         activeProviderId === 'claude'
           ? 'Anthropic Claude'
           : activeProviderId === 'openai'
-          ? 'OpenAI'
-          : 'Google Gemini';
+            ? 'OpenAI'
+            : 'Google Gemini';
       return NextResponse.json(
         { error: `API key is missing for ${providerLabel}. Please configure it in settings.` },
         { status: 400 }
@@ -44,7 +44,10 @@ export async function POST(request: Request, { params }: { params: Promise<{ id:
       });
     } catch (err) {
       console.error('[message/route] provider.sendMessage error:', err);
-      return NextResponse.json({ error: err instanceof Error ? err.message : String(err) }, { status: 500 });
+      return NextResponse.json(
+        { error: err instanceof Error ? err.message : String(err) },
+        { status: 500 }
+      );
     }
 
     if (!(aiStream instanceof ReadableStream)) {
@@ -82,6 +85,9 @@ export async function POST(request: Request, { params }: { params: Promise<{ id:
     });
   } catch (error) {
     console.error('[message/route] Unhandled error:', error);
-    return NextResponse.json({ error: error instanceof Error ? error.message : String(error) }, { status: 500 });
+    return NextResponse.json(
+      { error: error instanceof Error ? error.message : String(error) },
+      { status: 500 }
+    );
   }
 }

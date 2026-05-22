@@ -7,11 +7,7 @@ import ChatThread from '@/components/ChatThread';
 import GraphView from '@/components/GraphView';
 import SettingsModal from '@/components/SettingsModal';
 
-export default function ChatPage({
-  params,
-}: {
-  params: Promise<{ id: string }>;
-}) {
+export default function ChatPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = use(params);
 
   const {
@@ -94,7 +90,7 @@ export default function ChatPage({
   // Update graphWidth based on layout (sidebar and mobile states)
   useEffect(() => {
     const updateGraphWidth = () => {
-      const sidebarWidth = isMobile ? 0 : (isSidebarCollapsed ? 68 : 280);
+      const sidebarWidth = isMobile ? 0 : isSidebarCollapsed ? 68 : 280;
       const defaultWidth = (window.innerWidth - sidebarWidth) / 2;
 
       setGraphWidth((prev) => {
@@ -113,7 +109,7 @@ export default function ChatPage({
   }, [isSidebarCollapsed, isMobile]);
 
   return (
-    <main className="flex h-screen w-screen overflow-hidden bg-white text-neutral-900 dark:bg-[#131314] dark:text-neutral-50 transition-colors duration-200">
+    <main className="flex h-dvh w-screen overflow-hidden bg-white text-neutral-900 dark:bg-[#131314] dark:text-neutral-50 transition-colors duration-200">
       {/* Mobile Left Drawer Backdrop */}
       {isLeftMobileOpen && (
         <div
@@ -148,7 +144,7 @@ export default function ChatPage({
             setIsLeftMobileOpen(false);
           }}
           onDeleteChat={deleteChat}
-          isCollapsed={isSidebarCollapsed}
+          isCollapsed={isMobile ? false : isSidebarCollapsed}
           onToggleCollapse={() => setIsSidebarCollapsed(!isSidebarCollapsed)}
           onOpenSettings={() => setIsSettingsOpen(true)}
         />
@@ -192,8 +188,8 @@ export default function ChatPage({
 
         {/* Right Panel: Radial Tree Graph Map */}
         <div
-          style={{ width: isMobile ? '100%' : (isGraphCollapsed ? '0px' : `${graphWidth}px`) }}
-          className={`fixed inset-x-0 bottom-0 h-[50vh] z-30 bg-white dark:bg-[#131314] border-t border-neutral-200 dark:border-neutral-800 transition-transform duration-300 md:static md:h-full md:translate-y-0 md:border-t-0 lg:shrink-0 overflow-hidden ${
+          style={{ width: isMobile ? '100%' : isGraphCollapsed ? '0px' : `${graphWidth}px` }}
+          className={`fixed inset-x-0 bottom-0 h-[50dvh] z-30 bg-white dark:bg-[#131314] border-t border-neutral-200 dark:border-neutral-800 transition-transform duration-300 md:static md:h-full md:translate-y-0 md:border-t-0 lg:shrink-0 overflow-hidden ${
             isRightMobileOpen ? 'translate-y-0' : 'translate-y-full'
           } ${isResizing ? '' : 'transition-all duration-300'}`}
         >
@@ -202,7 +198,7 @@ export default function ChatPage({
             selectedNodeId={selectedNodeId}
             onSelectNode={selectNode}
             onCloseMobile={() => setIsRightMobileOpen(false)}
-            isCollapsed={isGraphCollapsed}
+            isCollapsed={isMobile ? !isRightMobileOpen : isGraphCollapsed}
             onToggleCollapse={() => {
               if (isGraphCollapsed) {
                 hasResizedRef.current = false;

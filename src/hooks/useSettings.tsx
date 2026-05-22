@@ -31,7 +31,11 @@ export function SettingsProvider({ children }: { children: React.ReactNode }) {
 
       // 1. Try to load from OPFS
       try {
-        if (typeof window !== 'undefined' && typeof navigator !== 'undefined' && navigator.storage) {
+        if (
+          typeof window !== 'undefined' &&
+          typeof navigator !== 'undefined' &&
+          navigator.storage
+        ) {
           const root = await navigator.storage.getDirectory();
           // Check if settings.json already exists
           try {
@@ -50,7 +54,7 @@ export function SettingsProvider({ children }: { children: React.ReactNode }) {
       const res = await fetch('/api/settings');
       if (res.ok) {
         const data = await res.json();
-        
+
         // If not found in OPFS, migrate server settings if they exist
         if (!hasOPFSSettings && data.settings) {
           opfsSettings = data.settings;
@@ -113,7 +117,6 @@ export function SettingsProvider({ children }: { children: React.ReactNode }) {
       console.error('Failed to save settings:', error);
     }
   };
-
 
   return (
     <SettingsContext.Provider value={{ settings, loading, updateSettings, hasKey, envKeys }}>

@@ -11,7 +11,10 @@ export async function GET(request: Request, { params }: { params: Promise<{ id: 
     }
     return NextResponse.json({ chat });
   } catch (error) {
-    return NextResponse.json({ error: error instanceof Error ? error.message : String(error) }, { status: 500 });
+    return NextResponse.json(
+      { error: error instanceof Error ? error.message : String(error) },
+      { status: 500 }
+    );
   }
 }
 
@@ -23,7 +26,10 @@ export async function PUT(request: Request, { params }: { params: Promise<{ id: 
     await repo.updateChat(id, body);
     return NextResponse.json({ success: true });
   } catch (error) {
-    return NextResponse.json({ error: error instanceof Error ? error.message : String(error) }, { status: 400 });
+    return NextResponse.json(
+      { error: error instanceof Error ? error.message : String(error) },
+      { status: 400 }
+    );
   }
 }
 
@@ -34,6 +40,9 @@ export async function DELETE(request: Request, { params }: { params: Promise<{ i
     await repo.deleteChat(id);
     return NextResponse.json({ success: true });
   } catch (error) {
-    return NextResponse.json({ error: error instanceof Error ? error.message : String(error) }, { status: 500 });
+    return NextResponse.json(
+      { error: error instanceof Error ? error.message : String(error) },
+      { status: 500 }
+    );
   }
 }

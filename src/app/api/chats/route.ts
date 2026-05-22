@@ -7,7 +7,10 @@ export async function GET() {
     const chats = await repo.listChats();
     return NextResponse.json({ chats });
   } catch (error) {
-    return NextResponse.json({ error: error instanceof Error ? error.message : String(error) }, { status: 500 });
+    return NextResponse.json(
+      { error: error instanceof Error ? error.message : String(error) },
+      { status: 500 }
+    );
   }
 }
 
@@ -18,6 +21,9 @@ export async function POST(request: Request) {
     await repo.createChat(chat);
     return NextResponse.json({ success: true, chat });
   } catch (error) {
-    return NextResponse.json({ error: error instanceof Error ? error.message : String(error) }, { status: 400 });
+    return NextResponse.json(
+      { error: error instanceof Error ? error.message : String(error) },
+      { status: 400 }
+    );
   }
 }

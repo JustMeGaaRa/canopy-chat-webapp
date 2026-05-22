@@ -15,9 +15,7 @@ export class ClaudeProvider implements ChatProvider {
       throw new Error('ANTHROPIC_API_KEY is missing');
     }
 
-    const isMockKey =
-      apiKey === 'mock' ||
-      apiKey.startsWith('mock-');
+    const isMockKey = apiKey === 'mock' || apiKey.startsWith('mock-');
 
     if (isMockKey) {
       if (options?.stream) {

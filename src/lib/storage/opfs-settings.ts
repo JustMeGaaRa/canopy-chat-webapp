@@ -1,7 +1,8 @@
 import { AppSettings } from '../settings';
 
 // Safe check for browser environment and OPFS availability
-const isBrowser = typeof window !== 'undefined' && typeof navigator !== 'undefined' && !!navigator.storage;
+const isBrowser =
+  typeof window !== 'undefined' && typeof navigator !== 'undefined' && !!navigator.storage;
 
 export const DEFAULT_MODELS_FOR_PROVIDER: Record<string, string> = {
   claude: 'claude-sonnet-4-6',
@@ -19,23 +20,9 @@ export const DEFAULT_SETTINGS: AppSettings = {
     gemini: '',
   },
   providerModels: {
-    claude: [
-      'claude-opus-4-7',
-      'claude-sonnet-4-6',
-      'claude-haiku-4-5',
-    ],
-    openai: [
-      'gpt-5.5',
-      'gpt-5.5-pro',
-      'gpt-5.4-mini',
-      'gpt-5.4-nano',
-    ],
-    gemini: [
-      'gemini-3.5-flash',
-      'gemini-3.1-pro',
-      'gemini-3.1-flash-lite',
-      'gemini-omni-flash',
-    ],
+    claude: ['claude-opus-4-7', 'claude-sonnet-4-6', 'claude-haiku-4-5'],
+    openai: ['gpt-5.5', 'gpt-5.5-pro', 'gpt-5.4-mini', 'gpt-5.4-nano'],
+    gemini: ['gemini-3.5-flash', 'gemini-3.1-pro', 'gemini-3.1-flash-lite', 'gemini-omni-flash'],
   },
   theme: 'system',
   graphRingSpacing: 90,

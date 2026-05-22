@@ -10,14 +10,18 @@ import { computeRadialLayout } from '@/lib/graph-layout';
 import { GitFork, ZoomIn, ZoomOut, Target } from 'lucide-react';
 
 const CollapseIcon = () => (
-  <svg viewBox="0 0 24 24" className="h-5 w-5 fill-none stroke-current" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+  <svg
+    viewBox="0 0 24 24"
+    className="h-5 w-5 fill-none stroke-current"
+    strokeWidth="2"
+    strokeLinecap="round"
+    strokeLinejoin="round"
+  >
     <rect x="3" y="3" width="18" height="18" rx="2" />
     <line x1="15" y1="3" x2="15" y2="21" />
     <path d="M8 9l3 3-3 3" />
   </svg>
 );
-
-
 
 interface GraphViewProps {
   activeChat: Chat | null;
@@ -225,7 +229,10 @@ export default function GraphView({
   const isEmpty = !activeChat || userNodes.length === 0;
 
   return (
-    <div ref={containerRef} className="relative h-full w-full overflow-hidden bg-neutral-50/30 dark:bg-neutral-950/20 select-none">
+    <div
+      ref={containerRef}
+      className="relative h-full w-full overflow-hidden bg-neutral-50/30 dark:bg-neutral-950/20 select-none"
+    >
       {/* Dot-grid background — behind everything */}
       <div className="absolute inset-0 bg-[radial-gradient(#e5e7eb_1px,transparent_1px)] dark:bg-[radial-gradient(#27272a_1px,transparent_1px)] [background-size:16px_16px] pointer-events-none z-0" />
 
@@ -334,37 +341,41 @@ export default function GraphView({
             const isBranchPoint = (childrenCounts[node.id] || 0) > 1;
             const isRoot = node.parentId === null;
 
-            const nodeRadius = isRoot
-              ? (isSelected ? 10.5 : 8.5)
-              : (isSelected ? 7 : 5.5);
+            const nodeRadius = isRoot ? (isSelected ? 10.5 : 8.5) : isSelected ? 7 : 5.5;
 
             const nodeStrokeWidth = isRoot
-              ? (isSelected ? 3.5 : 2.5)
-              : (isSelected ? 3 : isActivePath ? 2 : 1);
+              ? isSelected
+                ? 3.5
+                : 2.5
+              : isSelected
+                ? 3
+                : isActivePath
+                  ? 2
+                  : 1;
 
             const nodeFill = isRoot
-              ? (isSelected
+              ? isSelected
                 ? 'fill-violet-500 dark:fill-violet-400'
                 : isActivePath
                   ? 'fill-violet-600 dark:fill-violet-500'
-                  : 'fill-violet-300 dark:fill-violet-800/50')
-              : (isSelected
+                  : 'fill-violet-300 dark:fill-violet-800/50'
+              : isSelected
                 ? 'fill-amber-500'
                 : isActivePath
                   ? 'fill-blue-500'
-                  : 'fill-blue-300 dark:fill-blue-800/50');
+                  : 'fill-blue-300 dark:fill-blue-800/50';
 
             const nodeStroke = isRoot
-              ? (isSelected
+              ? isSelected
                 ? 'stroke-amber-500 dark:stroke-amber-400'
                 : isActivePath
                   ? 'stroke-violet-700 dark:stroke-violet-400'
-                  : 'stroke-violet-200 dark:stroke-violet-800/40')
-              : (isSelected
+                  : 'stroke-violet-200 dark:stroke-violet-800/40'
+              : isSelected
                 ? 'stroke-amber-600 dark:stroke-amber-400'
                 : isActivePath
                   ? 'stroke-blue-600 dark:stroke-blue-400'
-                  : 'stroke-blue-200 dark:stroke-blue-800/40');
+                  : 'stroke-blue-200 dark:stroke-blue-800/40';
 
             const offsetDist = isRoot ? 17 : 14;
             const textX = pos.x + offsetDist * Math.cos(pos.angle);

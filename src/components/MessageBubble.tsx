@@ -35,9 +35,7 @@ export default function MessageBubble({
     if (createdAt) {
       try {
         const date = new Date(createdAt);
-        setFormattedTime(
-          date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
-        );
+        setFormattedTime(date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }));
       } catch (err) {
         console.error(err);
       }
@@ -59,11 +57,7 @@ export default function MessageBubble({
       id={id ? `msg-${id}` : undefined}
       className="group relative grid grid-cols-12 gap-x-4 w-full mb-5 px-3 py-2 hover:bg-neutral-50/40 dark:hover:bg-neutral-900/10 rounded-2xl transition-all duration-200"
     >
-      <div
-        className={`col-span-12 ${
-          isUser ? 'items-end' : 'items-start'
-        } flex flex-col`}
-      >
+      <div className={`col-span-12 ${isUser ? 'items-end' : 'items-start'} flex flex-col`}>
         <div className="flex items-start gap-2 w-full">
           {isUser ? (
             <div className="flex flex-col items-end max-w-[85%] ml-auto relative">
@@ -91,7 +85,7 @@ export default function MessageBubble({
                     {formattedTime}
                   </span>
                 )}
-                
+
                 <button
                   onClick={handleCopy}
                   className="p-1 rounded-lg hover:bg-neutral-200 dark:hover:bg-neutral-700 text-neutral-500 dark:text-neutral-400 hover:text-neutral-700 dark:hover:text-neutral-200 transition cursor-pointer"
@@ -115,10 +109,7 @@ export default function MessageBubble({
                     </button>
                     {menuOpen && (
                       <>
-                        <div
-                          className="fixed inset-0 z-40"
-                          onClick={() => setMenuOpen(false)}
-                        />
+                        <div className="fixed inset-0 z-40" onClick={() => setMenuOpen(false)} />
                         <div className="absolute right-0 mt-1 w-36 rounded-xl border border-neutral-200/80 bg-white p-1 shadow-lg dark:border-neutral-800/80 dark:bg-neutral-950 z-50 animate-in fade-in slide-in-from-top-1 duration-150">
                           <button
                             onClick={() => {
@@ -221,7 +212,7 @@ export default function MessageBubble({
                     {formattedTime}
                   </span>
                 )}
-                
+
                 <button
                   onClick={handleCopy}
                   className="p-1 rounded-lg hover:bg-neutral-200 dark:hover:bg-neutral-700 text-neutral-500 dark:text-neutral-400 hover:text-neutral-700 dark:hover:text-neutral-200 transition cursor-pointer"

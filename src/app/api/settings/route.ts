@@ -33,6 +33,9 @@ export async function PUT(request: Request) {
     const { hasKey, envKeys } = checkHasKey(body);
     return NextResponse.json({ settings: body, hasKey, envKeys });
   } catch (error) {
-    return NextResponse.json({ error: error instanceof Error ? error.message : String(error) }, { status: 400 });
+    return NextResponse.json(
+      { error: error instanceof Error ? error.message : String(error) },
+      { status: 400 }
+    );
   }
 }

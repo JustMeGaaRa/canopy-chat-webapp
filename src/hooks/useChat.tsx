@@ -263,7 +263,7 @@ export function ChatProvider({ children }: { children: React.ReactNode }) {
         createdAt: new Date().toISOString(),
       };
 
-      const currentChat = activeChat || await chatRepo.getChat(chatId);
+      const currentChat = activeChat || (await chatRepo.getChat(chatId));
       if (!currentChat) {
         setError('Chat not found');
         setStreaming(false);
@@ -368,7 +368,16 @@ export function ChatProvider({ children }: { children: React.ReactNode }) {
         }
       }
     },
-    [activeChatId, selectedNodeId, activeChat, isNewChatMode, loadChat, loadChatsList, router, settings]
+    [
+      activeChatId,
+      selectedNodeId,
+      activeChat,
+      isNewChatMode,
+      loadChat,
+      loadChatsList,
+      router,
+      settings,
+    ]
   );
 
   // Toggle bookmark status on a specific node
