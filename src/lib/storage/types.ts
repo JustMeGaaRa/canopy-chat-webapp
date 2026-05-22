@@ -4,6 +4,7 @@ export interface ChatNode {
   role: 'user' | 'assistant';
   content: string;
   createdAt: string; // ISO timestamp
+  isBookmarked?: boolean;
 }
 
 export interface Chat {

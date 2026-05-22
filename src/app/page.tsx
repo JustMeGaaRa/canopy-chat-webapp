@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { useChat } from '@/hooks/useChat';
 import ChatList from '@/components/ChatList';
 import ChatThread from '@/components/ChatThread';
@@ -23,6 +23,8 @@ export default function Home() {
     error,
     setError,
     setActiveChatId,
+    toggleBookmark,
+    deleteNode,
   } = useChat(null);
 
   const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(false);
@@ -35,6 +37,8 @@ export default function Home() {
   const [isGraphCollapsed, setIsGraphCollapsed] = useState(true);
   const [isResizing, setIsResizing] = useState(false);
   const [isMobile, setIsMobile] = useState(true);
+
+  const hasResizedRef = useRef(false);
 
   const startResize = (e: React.MouseEvent) => {
     e.preventDefault();
@@ -49,6 +53,7 @@ export default function Home() {
       const maxWidth = window.innerWidth * 0.5;
       if (newWidth >= 280 && newWidth <= maxWidth) {
         setGraphWidth(newWidth);
+        hasResizedRef.current = true;
       }
     };
 
@@ -69,8 +74,6 @@ export default function Home() {
   useEffect(() => {
     const handleResize = () => {
       setIsMobile(window.innerWidth < 768);
-      const maxWidth = window.innerWidth * 0.5;
-      setGraphWidth((prev) => Math.min(prev, maxWidth));
       if (window.innerWidth >= 768 && window.innerWidth <= 1024) {
         setIsSidebarCollapsed(true);
       } else if (window.innerWidth > 1024) {
@@ -81,6 +84,27 @@ export default function Home() {
     window.addEventListener('resize', handleResize);
     return () => window.removeEventListener('resize', handleResize);
   }, []);
+
+  // Update graphWidth based on layout (sidebar and mobile states)
+  useEffect(() => {
+    const updateGraphWidth = () => {
+      const sidebarWidth = isMobile ? 0 : (isSidebarCollapsed ? 68 : 280);
+      const defaultWidth = (window.innerWidth - sidebarWidth) / 2;
+
+      setGraphWidth((prev) => {
+        const maxWidth = window.innerWidth * 0.5;
+        if (hasResizedRef.current) {
+          return Math.min(prev, maxWidth);
+        } else {
+          return defaultWidth;
+        }
+      });
+    };
+
+    updateGraphWidth();
+    window.addEventListener('resize', updateGraphWidth);
+    return () => window.removeEventListener('resize', updateGraphWidth);
+  }, [isSidebarCollapsed, isMobile]);
 
   return (
     <main className="flex h-screen w-screen overflow-hidden bg-white text-neutral-900 dark:bg-[#131314] dark:text-neutral-50 transition-colors duration-200">
@@ -141,7 +165,14 @@ export default function Home() {
             error={error}
             setError={setError}
             isGraphCollapsed={isGraphCollapsed}
-            onToggleGraph={() => setIsGraphCollapsed(!isGraphCollapsed)}
+            onToggleGraph={() => {
+              if (isGraphCollapsed) {
+                hasResizedRef.current = false;
+              }
+              setIsGraphCollapsed(!isGraphCollapsed);
+            }}
+            onToggleBookmark={toggleBookmark}
+            onDeleteNode={deleteNode}
           />
         </div>
 
@@ -166,7 +197,12 @@ export default function Home() {
             onSelectNode={selectNode}
             onCloseMobile={() => setIsRightMobileOpen(false)}
             isCollapsed={isGraphCollapsed}
-            onToggleCollapse={() => setIsGraphCollapsed(!isGraphCollapsed)}
+            onToggleCollapse={() => {
+              if (isGraphCollapsed) {
+                hasResizedRef.current = false;
+              }
+              setIsGraphCollapsed(!isGraphCollapsed);
+            }}
           />
         </div>
       </div>

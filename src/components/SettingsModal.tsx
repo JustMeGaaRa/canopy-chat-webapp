@@ -77,9 +77,9 @@ export default function SettingsModal({ isOpen, onClose }: SettingsModalProps) {
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm transition-all duration-300">
-      <div className="relative w-full max-w-md max-h-[90vh] flex flex-col overflow-hidden rounded-2xl border border-neutral-200 bg-white p-6 shadow-2xl transition-all dark:border-neutral-800 dark:bg-neutral-900 mx-4 sm:mx-0">
+      <div className="relative w-full max-w-md max-h-[90vh] flex flex-col overflow-hidden rounded-2xl border border-neutral-200 bg-white shadow-2xl transition-all dark:border-neutral-800 dark:bg-neutral-900 mx-4 sm:mx-0">
         {/* Header */}
-        <div className="flex items-center justify-between border-b border-neutral-100 pb-4 dark:border-neutral-800 shrink-0">
+        <div className="flex items-center justify-between border-b border-neutral-100 px-6 pt-6 pb-4 dark:border-neutral-800 shrink-0">
           <div className="flex items-center gap-2">
             <Settings2 className="h-5 w-5 text-neutral-500 dark:text-neutral-400" />
             <h2 className="text-lg font-semibold text-neutral-900 dark:text-neutral-50 font-sans">
@@ -95,7 +95,7 @@ export default function SettingsModal({ isOpen, onClose }: SettingsModalProps) {
         </div>
 
         {/* Content */}
-        <div className="flex-1 overflow-y-auto pr-1 my-6 space-y-6 scrollbar-thin">
+        <div className="flex-1 overflow-y-auto px-6 py-6 space-y-6 scrollbar-thin">
           {/* Section 1: Appearance */}
           <div className="space-y-2">
             <label className="text-xs font-semibold uppercase tracking-wider text-neutral-400 dark:text-neutral-500">
@@ -329,7 +329,7 @@ export default function SettingsModal({ isOpen, onClose }: SettingsModalProps) {
         </div>
 
         {/* Footer */}
-        <div className="flex justify-end gap-2 border-t border-neutral-100 pt-4 dark:border-neutral-800 shrink-0">
+        <div className="flex justify-end gap-2 border-t border-neutral-100 px-6 pb-6 pt-4 dark:border-neutral-800 shrink-0">
           <button
             onClick={onClose}
             className="rounded-xl px-4 py-2 text-sm font-medium text-neutral-600 hover:bg-neutral-50 dark:text-neutral-400 dark:hover:bg-neutral-800/50 transition"

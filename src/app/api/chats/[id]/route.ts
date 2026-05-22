@@ -2,8 +2,8 @@ import { NextResponse } from 'next/server';
 import { getChatRepository } from '@/lib/storage';
 
 export async function GET(request: Request, { params }: { params: Promise<{ id: string }> }) {
+  const { id } = await params;
   try {
-    const { id } = await params;
     const repo = getChatRepository();
     const chat = await repo.getChat(id);
     if (!chat) {
@@ -16,8 +16,8 @@ export async function GET(request: Request, { params }: { params: Promise<{ id: 
 }
 
 export async function PUT(request: Request, { params }: { params: Promise<{ id: string }> }) {
+  const { id } = await params;
   try {
-    const { id } = await params;
     const repo = getChatRepository();
     const body = await request.json();
     await repo.updateChat(id, body);
@@ -28,8 +28,8 @@ export async function PUT(request: Request, { params }: { params: Promise<{ id: 
 }
 
 export async function DELETE(request: Request, { params }: { params: Promise<{ id: string }> }) {
+  const { id } = await params;
   try {
-    const { id } = await params;
     const repo = getChatRepository();
     await repo.deleteChat(id);
     return NextResponse.json({ success: true });

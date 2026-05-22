@@ -4,7 +4,7 @@ import React, { useState, useRef, useEffect } from 'react';
 import { Chat, ChatNode } from '@/lib/storage/types';
 import MessageBubble from './MessageBubble';
 import { useSettings } from '@/hooks/useSettings';
-import { Send, GitFork, AlertCircle, Settings, HelpCircle, Menu, Network, Bot, Plus, Mic, ChevronDown, Check } from 'lucide-react';
+import { Send, GitFork, AlertCircle, Settings, HelpCircle, Menu, Network, Bot, Plus, Mic, ChevronDown, Check, Bookmark } from 'lucide-react';
 
 interface ChatThreadProps {
   activeChat: Chat | null;
@@ -20,6 +20,8 @@ interface ChatThreadProps {
   setError: (err: string | null) => void;
   isGraphCollapsed?: boolean;
   onToggleGraph?: () => void;
+  onToggleBookmark?: (id: string) => Promise<void>;
+  onDeleteNode?: (id: string) => Promise<void>;
 }
 
 const CollapseIcon = () => (
@@ -37,6 +39,49 @@ const ExpandIcon = () => (
     <path d="M11 15l-3-3 3-3" />
   </svg>
 );
+
+interface TimelinePointProps {
+  node: ChatNode;
+  isBookmarked: boolean;
+  topPercent: number;
+  onScrollToMessage: (id: string) => void;
+}
+
+function TimelinePoint({ node, isBookmarked, topPercent, onScrollToMessage }: TimelinePointProps) {
+  const [hovered, setHovered] = useState(false);
+
+  const previewText = React.useMemo(() => {
+    const text = node.content;
+    return text.length > 60 ? `${text.substring(0, 57)}...` : text;
+  }, [node.content]);
+
+  return (
+    <div
+      style={{ top: `${topPercent}%` }}
+      className="absolute right-0 w-8 -translate-y-1/2 cursor-pointer h-5 z-30"
+      onMouseEnter={() => setHovered(true)}
+      onMouseLeave={() => setHovered(false)}
+      onClick={() => onScrollToMessage(node.id)}
+    >
+      <div
+        className={`absolute top-1/2 -translate-y-1/2 transition-all duration-150 ${
+          isBookmarked
+            ? 'w-3.5 h-[3px] bg-amber-500 dark:bg-amber-400 rounded-l-sm right-0 shadow-xs z-10'
+            : 'w-2 h-[1.5px] bg-neutral-300 dark:bg-neutral-700 rounded-full opacity-35 right-[1px] group-hover/timeline:opacity-70 hover:!opacity-100 hover:w-2.5 hover:h-[2.5px] hover:right-0 hover:bg-blue-500 dark:hover:bg-blue-400'
+        }`}
+      />
+
+      {hovered && (
+        <div className="absolute right-7 top-1/2 -translate-y-1/2 bg-neutral-900/90 dark:bg-neutral-800/95 text-white dark:text-neutral-100 text-xs px-3 py-1.5 rounded-lg shadow-lg border border-neutral-700/50 backdrop-blur-xs whitespace-nowrap overflow-hidden text-ellipsis max-w-[220px] pointer-events-none z-50 animate-in fade-in slide-in-from-right-1 duration-150">
+          <div className="font-semibold text-[9px] uppercase tracking-wider text-neutral-400 mb-0.5">
+            {node.role === 'user' ? 'User' : 'Assistant'}
+          </div>
+          <div className="truncate font-sans">{previewText}</div>
+        </div>
+      )}
+    </div>
+  );
+}
 
 const MODEL_LABEL_MAP: Record<string, string> = {
   'claude-opus-4-7': 'Claude 4.7 Opus',
@@ -74,6 +119,8 @@ export default function ChatThread({
   setError,
   isGraphCollapsed = true,
   onToggleGraph,
+  onToggleBookmark,
+  onDeleteNode,
 }: ChatThreadProps) {
   const { settings, updateSettings, hasKey, envKeys } = useSettings();
   const [input, setInput] = useState('');
@@ -170,12 +217,69 @@ export default function ChatThread({
     return text.length > 50 ? `${text.substring(0, 47)}...` : text;
   }, [activeChat, selectedNodeId]);
 
+  const [positions, setPositions] = useState<Record<string, number>>({});
+
   // Auto scroll to bottom
   useEffect(() => {
     if (scrollRef.current) {
       scrollRef.current.scrollTop = scrollRef.current.scrollHeight;
     }
   }, [pathNodes, streamingText, streaming]);
+
+  // Calculate message positions relative to scroll container height
+  useEffect(() => {
+    const calculatePositions = () => {
+      if (!scrollRef.current) return;
+      const container = scrollRef.current;
+      const containerRect = container.getBoundingClientRect();
+      const containerHeight = container.scrollHeight;
+      if (containerHeight === 0) return;
+
+      const newPositions: Record<string, number> = {};
+      pathNodes.forEach((node) => {
+        const el = document.getElementById(`msg-${node.id}`);
+        if (el) {
+          const elRect = el.getBoundingClientRect();
+          const relativeOffsetTop = elRect.top - containerRect.top + container.scrollTop;
+          const percent = (relativeOffsetTop / containerHeight) * 100;
+          newPositions[node.id] = percent;
+        }
+      });
+      setPositions(newPositions);
+    };
+
+    calculatePositions();
+
+    const resizeObserver = new ResizeObserver(() => {
+      calculatePositions();
+    });
+
+    if (scrollRef.current) {
+      resizeObserver.observe(scrollRef.current);
+      const chatContainer = scrollRef.current.firstElementChild;
+      if (chatContainer) {
+        resizeObserver.observe(chatContainer);
+      }
+    }
+
+    const timer = setTimeout(calculatePositions, 500);
+
+    return () => {
+      resizeObserver.disconnect();
+      clearTimeout(timer);
+    };
+  }, [pathNodes, streaming, streamingText]);
+
+  const handleScrollToMessage = (nodeId: string) => {
+    const element = document.getElementById(`msg-${nodeId}`);
+    if (element) {
+      element.scrollIntoView({ behavior: 'smooth', block: 'center' });
+      element.classList.add('animate-pulse-highlight');
+      setTimeout(() => {
+        element.classList.remove('animate-pulse-highlight');
+      }, 2000);
+    }
+  };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -212,7 +316,7 @@ export default function ChatThread({
     return (
       <div className="flex h-full flex-col bg-white dark:bg-[#131314]">
         {/* Mobile Header */}
-        <div className="flex h-14 items-center justify-between px-4 border-b border-neutral-200/60 dark:border-neutral-800/60 md:hidden shrink-0">
+        <div className="flex h-14 items-center justify-start gap-2 px-4 border-b border-neutral-200/60 dark:border-neutral-800/60 md:hidden shrink-0">
           <button
             onClick={onOpenSidebarMobile}
             className="rounded-lg p-1.5 text-neutral-500 hover:bg-neutral-100 dark:text-neutral-400 dark:hover:bg-neutral-800 transition"
@@ -220,12 +324,6 @@ export default function ChatThread({
             <Menu className="h-5 w-5" />
           </button>
           <span className="text-sm font-bold text-neutral-800 dark:text-neutral-200">Canopy</span>
-          <button
-            onClick={onOpenSettings}
-            className="rounded-lg p-1.5 text-neutral-500 hover:bg-neutral-100 dark:text-neutral-400 dark:hover:bg-neutral-800 transition"
-          >
-            <Settings className="h-5 w-5" />
-          </button>
         </div>
 
         <div className="flex flex-1 flex-col items-center justify-center p-6 text-center max-w-md mx-auto space-y-5">
@@ -305,64 +403,91 @@ export default function ChatThread({
               </div>
             </button>
           )}
-
-          <button
-            onClick={onOpenSettings}
-            className="rounded-lg p-1.5 text-neutral-500 hover:bg-neutral-100 dark:text-neutral-400 dark:hover:bg-neutral-800 transition"
-            title="Open Settings"
-          >
-            <Settings className="h-4.5 w-4.5" />
-          </button>
         </div>
       </div>
 
-      {/* Message feed scroll container */}
-      <div
-        ref={scrollRef}
-        className="flex-1 overflow-y-auto p-4 md:p-6 space-y-4 scrollbar-thin scrollbar-thumb-neutral-200 dark:scrollbar-thumb-neutral-800"
-      >
-        {isNewChatMode || pathNodes.length === 0 ? (
-          <div className="flex h-full flex-col items-center justify-center text-center p-8 space-y-4 select-none">
-            <div className="rounded-full bg-blue-50/80 dark:bg-blue-950/20 p-4 text-blue-500">
-              <HelpCircle className="h-8 w-8" />
+      {/* Message feed scroll container wrapper */}
+      <div className="relative flex-1 min-h-0 flex">
+        <div
+          ref={scrollRef}
+          className="flex-1 overflow-y-auto p-4 md:p-6 md:pr-12 space-y-4 scrollbar-thin scrollbar-thumb-neutral-200 dark:scrollbar-thumb-neutral-800"
+        >
+          {isNewChatMode || pathNodes.length === 0 ? (
+            <div className="flex h-full flex-col items-center justify-center text-center p-8 space-y-4 select-none">
+              <div className="rounded-full bg-blue-50/80 dark:bg-blue-950/20 p-4 text-blue-500">
+                <HelpCircle className="h-8 w-8" />
+              </div>
+              <h2 className="text-xl font-bold text-neutral-900 dark:text-neutral-50 font-sans">
+                Welcome to Canopy
+              </h2>
+              <p className="text-sm text-neutral-400 dark:text-neutral-500 max-w-sm font-sans leading-relaxed">
+                Start chatting below. You can click on any message or node in the radial graph on the
+                right to branch out and create parallel lines of conversation.
+              </p>
             </div>
-            <h2 className="text-xl font-bold text-neutral-900 dark:text-neutral-50 font-sans">
-              Welcome to Canopy
-            </h2>
-            <p className="text-sm text-neutral-400 dark:text-neutral-500 max-w-sm font-sans leading-relaxed">
-              Start chatting below. You can click on any message or node in the radial graph on the
-              right to branch out and create parallel lines of conversation.
-            </p>
-          </div>
-        ) : (
-          <div className="w-full max-w-3xl mx-auto flex flex-col">
-            {pathNodes.map((node) => (
-              <MessageBubble
-                key={node.id}
-                role={node.role}
-                content={node.content}
-              />
-            ))}
+          ) : (
+            <div className="w-full max-w-3xl mx-auto flex flex-col">
+              {pathNodes.map((node) => (
+                <MessageBubble
+                  key={node.id}
+                  id={node.id}
+                  role={node.role}
+                  content={node.content}
+                  createdAt={node.createdAt}
+                  isBookmarked={node.isBookmarked}
+                  onToggleBookmark={onToggleBookmark}
+                  onDelete={onDeleteNode}
+                />
+              ))}
 
-            {/* AI Streaming Response bubble */}
-            {streaming && streamingText && (
-              <MessageBubble role="assistant" content={streamingText} />
-            )}
+              {/* AI Streaming Response bubble */}
+              {streaming && streamingText && (
+                <MessageBubble role="assistant" content={streamingText} />
+              )}
 
-            {/* AI Loading Bubble (if stream hasn't output text yet) */}
-            {streaming && !streamingText && (
-              <div className="grid grid-cols-12 gap-x-4 w-full mb-5">
-                <div className="col-span-12 flex flex-col items-start">
-                  <div className="w-full text-sm py-1.5 mr-auto">
-                    <div className="flex items-center gap-1.5 py-1">
-                      <span className="h-2 w-2 animate-bounce rounded-full bg-neutral-400"></span>
-                      <span className="h-2 w-2 animate-bounce rounded-full bg-neutral-400 [animation-delay:0.2s]"></span>
-                      <span className="h-2 w-2 animate-bounce rounded-full bg-neutral-400 [animation-delay:0.4s]"></span>
+              {/* AI Loading Bubble (if stream hasn't output text yet) */}
+              {streaming && !streamingText && (
+                <div className="grid grid-cols-12 gap-x-4 w-full mb-5">
+                  <div className="col-span-12 flex flex-col items-start">
+                    <div className="w-full text-sm py-1.5 mr-auto">
+                      <div className="flex items-center gap-1.5 py-1">
+                        <span className="h-2 w-2 animate-bounce rounded-full bg-neutral-400"></span>
+                        <span className="h-2 w-2 animate-bounce rounded-full bg-neutral-400 [animation-delay:0.2s]"></span>
+                        <span className="h-2 w-2 animate-bounce rounded-full bg-neutral-400 [animation-delay:0.4s]"></span>
+                      </div>
                     </div>
                   </div>
                 </div>
-              </div>
-            )}
+              )}
+            </div>
+          )}
+        </div>
+
+        {/* Floating vertical timeline on the right */}
+        {!isNewChatMode && pathNodes.length > 0 && (
+          <div className="absolute right-[6px] top-1 bottom-1 w-2.5 rounded-sm border-l border-neutral-200/10 dark:border-neutral-800/10 bg-neutral-50/5 dark:bg-neutral-950/5 flex flex-col items-center z-20 group/timeline select-none hover:bg-neutral-100/10 dark:hover:bg-neutral-950/15 transition-all duration-200">
+            {/* Inner relative container to hold points, with vertical inset padding */}
+            <div className="absolute inset-y-4 left-0 right-0">
+              {pathNodes.map((node, index) => {
+                const isBookmarked = !!node.isBookmarked;
+                const positionPercent =
+                  positions[node.id] !== undefined
+                    ? positions[node.id]
+                    : pathNodes.length > 1
+                    ? (index / (pathNodes.length - 1)) * 100
+                    : 50;
+
+                return (
+                  <TimelinePoint
+                    key={node.id}
+                    node={node}
+                    isBookmarked={isBookmarked}
+                    topPercent={positionPercent}
+                    onScrollToMessage={handleScrollToMessage}
+                  />
+                );
+              })}
+            </div>
           </div>
         )}
       </div>

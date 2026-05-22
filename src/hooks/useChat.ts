@@ -19,6 +19,18 @@ export function useChat(initialChatId?: string | null) {
   const [isNewChatMode, setIsNewChatMode] = useState(!initialChatId);
   const skipNextLoadRef = useRef(false);
 
+  // Keep refs of state to prevent re-creating loadChatsList callback
+  const activeChatIdRef = useRef<string | null>(activeChatId);
+  const isNewChatModeRef = useRef(isNewChatMode);
+
+  useEffect(() => {
+    activeChatIdRef.current = activeChatId;
+  }, [activeChatId]);
+
+  useEffect(() => {
+    isNewChatModeRef.current = isNewChatMode;
+  }, [isNewChatMode]);
+
   // Wrapper: update local state AND push URL
   const setActiveChatId = useCallback(
     (id: string | null) => {
@@ -44,7 +56,7 @@ export function useChat(initialChatId?: string | null) {
         // Handle auto-selecting active chat
         if (selectLatestId) {
           setActiveChatIdState(selectLatestId);
-        } else if (data.chats.length > 0 && !activeChatId && !isNewChatMode) {
+        } else if (data.chats.length > 0 && !activeChatIdRef.current && !isNewChatModeRef.current) {
           setActiveChatId(data.chats[0].id);
         } else if (data.chats.length === 0) {
           setIsNewChatMode(true);
@@ -56,7 +68,7 @@ export function useChat(initialChatId?: string | null) {
         setLoading(false);
       }
     },
-    [activeChatId, isNewChatMode, setActiveChatId]
+    [setActiveChatId]
   );
 
   // Load details for single chat
@@ -270,6 +282,100 @@ export function useChat(initialChatId?: string | null) {
     [activeChatId, selectedNodeId, activeChat, isNewChatMode, loadChat, loadChatsList, router]
   );
 
+  // Toggle bookmark status on a specific node
+  const toggleBookmark = useCallback(
+    async (nodeId: string) => {
+      if (!activeChatId || !activeChat) return;
+
+      const updatedNodes = activeChat.nodes.map((node) => {
+        if (node.id === nodeId) {
+          return {
+            ...node,
+            isBookmarked: !node.isBookmarked,
+          };
+        }
+        return node;
+      });
+
+      try {
+        await fetch(`/api/chats/${activeChatId}`, {
+          method: 'PUT',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ nodes: updatedNodes }),
+        });
+
+        setActiveChat((prev) =>
+          prev
+            ? {
+                ...prev,
+                nodes: updatedNodes,
+              }
+            : null
+        );
+      } catch (err) {
+        console.error('Failed to toggle bookmark:', err);
+        setError('Failed to update bookmark');
+      }
+    },
+    [activeChatId, activeChat]
+  );
+
+  // Delete a specific node and all of its descendants
+  const deleteNode = useCallback(
+    async (nodeId: string) => {
+      if (!activeChatId || !activeChat) return;
+
+      // Find all descendants of nodeId
+      const descendants = new Set<string>();
+      const queue = [nodeId];
+      while (queue.length > 0) {
+        const current = queue.shift()!;
+        descendants.add(current);
+        activeChat.nodes.forEach((n) => {
+          if (n.parentId === current) {
+            queue.push(n.id);
+          }
+        });
+      }
+
+      // Filter nodes
+      const remainingNodes = activeChat.nodes.filter((n) => !descendants.has(n.id));
+
+      // Calculate new selectedNodeId if the current one was deleted
+      let newSelectedNodeId = selectedNodeId;
+      if (selectedNodeId && descendants.has(selectedNodeId)) {
+        const nodeToDelete = activeChat.nodes.find((n) => n.id === nodeId);
+        newSelectedNodeId = nodeToDelete ? nodeToDelete.parentId : null;
+      }
+
+      try {
+        await fetch(`/api/chats/${activeChatId}`, {
+          method: 'PUT',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            nodes: remainingNodes,
+            selectedNodeId: newSelectedNodeId,
+          }),
+        });
+
+        setActiveChat((prev) =>
+          prev
+            ? {
+                ...prev,
+                nodes: remainingNodes,
+                selectedNodeId: newSelectedNodeId,
+              }
+            : null
+        );
+        setSelectedNodeId(newSelectedNodeId);
+      } catch (err) {
+        console.error('Failed to delete node:', err);
+        setError('Failed to delete message');
+      }
+    },
+    [activeChatId, activeChat, selectedNodeId]
+  );
+
   return {
     chats,
     activeChat,
@@ -286,5 +392,7 @@ export function useChat(initialChatId?: string | null) {
     sendMessage,
     setError,
     setActiveChatId,
+    toggleBookmark,
+    deleteNode,
   };
 }

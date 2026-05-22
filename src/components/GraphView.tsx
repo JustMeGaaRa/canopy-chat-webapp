@@ -209,9 +209,9 @@ export default function GraphView({
       r={d * ringSpacing}
       fill="none"
       stroke="currentColor"
-      className="text-neutral-200/50 dark:text-neutral-800/40"
-      strokeDasharray="4 4"
-      strokeWidth={1}
+      className="text-neutral-300 dark:text-neutral-800"
+      strokeDasharray="6 6"
+      strokeWidth={1.25}
     />
   ));
 
@@ -307,15 +307,11 @@ export default function GraphView({
             if (!posC || !posP) return null;
 
             const isActive = activePathSet.has(node.id) && activePathSet.has(node.parentId);
-            // Bezier control point at parent-ring radius along the child angle
-            const parentRad = posP.depth * ringSpacing;
-            const xm = parentRad * Math.cos(posC.angle);
-            const ym = parentRad * Math.sin(posC.angle);
 
             return (
               <path
                 key={`edge-${node.id}`}
-                d={`M ${posP.x} ${posP.y} Q ${xm} ${ym} ${posC.x} ${posC.y}`}
+                d={`M ${posP.x} ${posP.y} L ${posC.x} ${posC.y}`}
                 fill="none"
                 stroke="currentColor"
                 className={
@@ -336,20 +332,41 @@ export default function GraphView({
             const isSelected = node.id === selectedUserNodeId;
             const isActivePath = activePathSet.has(node.id);
             const isBranchPoint = (childrenCounts[node.id] || 0) > 1;
+            const isRoot = node.parentId === null;
 
-            const nodeFill = isSelected
-              ? 'fill-amber-500'
-              : isActivePath
-                ? 'fill-blue-500'
-                : 'fill-blue-300 dark:fill-blue-800/50';
+            const nodeRadius = isRoot
+              ? (isSelected ? 10.5 : 8.5)
+              : (isSelected ? 7 : 5.5);
 
-            const nodeStroke = isSelected
-              ? 'stroke-amber-600 dark:stroke-amber-400'
-              : isActivePath
-                ? 'stroke-blue-600 dark:stroke-blue-400'
-                : 'stroke-blue-200 dark:stroke-blue-800/40';
+            const nodeStrokeWidth = isRoot
+              ? (isSelected ? 3.5 : 2.5)
+              : (isSelected ? 3 : isActivePath ? 2 : 1);
 
-            const offsetDist = 14;
+            const nodeFill = isRoot
+              ? (isSelected
+                ? 'fill-violet-500 dark:fill-violet-400'
+                : isActivePath
+                  ? 'fill-violet-600 dark:fill-violet-500'
+                  : 'fill-violet-300 dark:fill-violet-800/50')
+              : (isSelected
+                ? 'fill-amber-500'
+                : isActivePath
+                  ? 'fill-blue-500'
+                  : 'fill-blue-300 dark:fill-blue-800/50');
+
+            const nodeStroke = isRoot
+              ? (isSelected
+                ? 'stroke-amber-500 dark:stroke-amber-400'
+                : isActivePath
+                  ? 'stroke-violet-700 dark:stroke-violet-400'
+                  : 'stroke-violet-200 dark:stroke-violet-800/40')
+              : (isSelected
+                ? 'stroke-amber-600 dark:stroke-amber-400'
+                : isActivePath
+                  ? 'stroke-blue-600 dark:stroke-blue-400'
+                  : 'stroke-blue-200 dark:stroke-blue-800/40');
+
+            const offsetDist = isRoot ? 17 : 14;
             const textX = pos.x + offsetDist * Math.cos(pos.angle);
             const textY = pos.y + offsetDist * Math.sin(pos.angle);
             const textAnchor = Math.cos(pos.angle) < 0 ? 'end' : 'start';
@@ -364,18 +381,29 @@ export default function GraphView({
                 <circle
                   cx={pos.x}
                   cy={pos.y}
-                  r={18}
+                  r={isRoot ? 22 : 18}
                   fill="transparent"
                   className="hover:fill-blue-500/5 transition-all"
                 />
+
+                {/* Root node pulsing aura */}
+                {isRoot && (
+                  <circle
+                    cx={pos.x}
+                    cy={pos.y}
+                    r={nodeRadius + 5}
+                    fill="currentColor"
+                    className="text-violet-500/20 dark:text-violet-400/15 animate-pulse pointer-events-none"
+                  />
+                )}
 
                 {/* Main node circle */}
                 <circle
                   cx={pos.x}
                   cy={pos.y}
-                  r={isSelected ? 7 : 5.5}
+                  r={nodeRadius}
                   className={`transition-all duration-200 ${nodeFill} ${nodeStroke}`}
-                  strokeWidth={isSelected ? 3 : isActivePath ? 2 : 1}
+                  strokeWidth={nodeStrokeWidth}
                 />
 
                 {/* Branch dot indicator (white inner dot) */}
@@ -383,7 +411,7 @@ export default function GraphView({
                   <circle
                     cx={pos.x}
                     cy={pos.y}
-                    r={2}
+                    r={isRoot ? 2.5 : 2}
                     fill="white"
                     className="pointer-events-none"
                   />
@@ -398,12 +426,14 @@ export default function GraphView({
                   className={`text-[9px] font-medium font-mono pointer-events-none select-none transition-all duration-200 ${
                     isSelected
                       ? 'fill-amber-600 dark:fill-amber-400 font-bold'
-                      : isActivePath
-                        ? 'fill-neutral-800 dark:fill-neutral-200'
-                        : 'fill-neutral-400/80 dark:fill-neutral-600 group-hover:fill-neutral-600 dark:group-hover:fill-neutral-400'
+                      : isRoot
+                        ? 'fill-violet-600 dark:fill-violet-400 font-bold !text-[10px]'
+                        : isActivePath
+                          ? 'fill-neutral-800 dark:fill-neutral-200'
+                          : 'fill-neutral-400/80 dark:fill-neutral-600 group-hover:fill-neutral-600 dark:group-hover:fill-neutral-400'
                   }`}
                 >
-                  {getLabel(node.content)}
+                  {isRoot ? `✦ ${getLabel(node.content)}` : getLabel(node.content)}
                 </text>
               </g>
             );
