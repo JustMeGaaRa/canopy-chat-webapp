@@ -31,7 +31,7 @@ export default function ChatPage({
     setActiveChatId,
     toggleBookmark,
     deleteNode,
-  } = useChat(id);
+  } = useChat();
 
   const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(false);
   const [isLeftMobileOpen, setIsLeftMobileOpen] = useState(false);

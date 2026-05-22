@@ -1,27 +1,49 @@
 'use client';
 
-import { useState, useEffect, useCallback, useRef } from 'react';
-import { useRouter } from 'next/navigation';
+import React, { createContext, useContext, useState, useEffect, useCallback, useRef } from 'react';
+import { useRouter, useParams } from 'next/navigation';
 import { Chat, ChatMeta, ChatNode } from '@/lib/storage/types';
 import { BrowserOPFSChatRepository } from '@/lib/storage/opfs-repository';
 import { useSettings } from '@/hooks/useSettings';
 
 const chatRepo = new BrowserOPFSChatRepository();
 
-export function useChat(initialChatId?: string | null) {
+interface ChatContextType {
+  chats: ChatMeta[];
+  activeChat: Chat | null;
+  activeChatId: string | null;
+  selectedNodeId: string | null;
+  streaming: boolean;
+  streamingText: string;
+  loading: boolean;
+  error: string | null;
+  isNewChatMode: boolean;
+  selectNode: (nodeId: string | null) => Promise<void>;
+  startNewChat: () => void;
+  deleteChat: (id: string) => Promise<void>;
+  sendMessage: (content: string) => Promise<void>;
+  setError: React.Dispatch<React.SetStateAction<string | null>>;
+  setActiveChatId: (id: string | null) => void;
+  toggleBookmark: (nodeId: string) => Promise<void>;
+  deleteNode: (nodeId: string) => Promise<void>;
+}
+
+const ChatContext = createContext<ChatContextType | undefined>(undefined);
+
+export function ChatProvider({ children }: { children: React.ReactNode }) {
   const router = useRouter();
+  const params = useParams();
+  const activeChatId = (params?.id as string) || null;
+
   const { settings } = useSettings();
   const [chats, setChats] = useState<ChatMeta[]>([]);
   const [activeChat, setActiveChat] = useState<Chat | null>(null);
-  const [activeChatId, setActiveChatIdState] = useState<string | null>(
-    initialChatId ?? null
-  );
   const [selectedNodeId, setSelectedNodeId] = useState<string | null>(null);
   const [streaming, setStreaming] = useState(false);
   const [streamingText, setStreamingText] = useState('');
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const [isNewChatMode, setIsNewChatMode] = useState(!initialChatId);
+  const [isNewChatMode, setIsNewChatMode] = useState(!activeChatId);
   const skipNextLoadRef = useRef(false);
 
   // Keep refs of state to prevent re-creating loadChatsList callback
@@ -36,10 +58,9 @@ export function useChat(initialChatId?: string | null) {
     isNewChatModeRef.current = isNewChatMode;
   }, [isNewChatMode]);
 
-  // Wrapper: update local state AND push URL
+  // Wrapper: push URL
   const setActiveChatId = useCallback(
     (id: string | null) => {
-      setActiveChatIdState(id);
       if (id) {
         router.push(`/chat/${id}`);
       } else {
@@ -86,7 +107,7 @@ export function useChat(initialChatId?: string | null) {
 
         // Handle auto-selecting active chat
         if (selectLatestId) {
-          setActiveChatIdState(selectLatestId);
+          setActiveChatId(selectLatestId);
         } else if (opfsChats.length > 0 && !activeChatIdRef.current && !isNewChatModeRef.current) {
           setActiveChatId(opfsChats[0].id);
         } else if (opfsChats.length === 0) {
@@ -118,7 +139,6 @@ export function useChat(initialChatId?: string | null) {
 
   // Fetch initial chats list
   useEffect(() => {
-    // eslint-disable-next-line react-hooks/set-state-in-effect
     loadChatsList();
   }, [loadChatsList]);
 
@@ -132,9 +152,9 @@ export function useChat(initialChatId?: string | null) {
       loadChat(activeChatId);
       setIsNewChatMode(false);
     } else {
-      // eslint-disable-next-line react-hooks/set-state-in-effect
       setActiveChat(null);
       setSelectedNodeId(null);
+      setIsNewChatMode(true);
     }
   }, [activeChatId, loadChat]);
 
@@ -157,7 +177,6 @@ export function useChat(initialChatId?: string | null) {
   // Trigger New Chat state
   const startNewChat = useCallback(() => {
     setIsNewChatMode(true);
-    setActiveChatIdState(null);
     setActiveChat(null);
     setSelectedNodeId(null);
     setError(null);
@@ -171,7 +190,6 @@ export function useChat(initialChatId?: string | null) {
         await chatRepo.deleteChat(id);
 
         if (activeChatId === id) {
-          setActiveChatIdState(null);
           setActiveChat(null);
           setSelectedNodeId(null);
           router.push('/');
@@ -224,7 +242,6 @@ export function useChat(initialChatId?: string | null) {
           await chatRepo.createChat(newChat);
           skipNextLoadRef.current = true;
           setIsNewChatMode(false);
-          setActiveChatIdState(chatId);
           setActiveChat(newChat);
           router.push(`/chat/${chatId}`);
         } catch (err) {
@@ -440,23 +457,37 @@ export function useChat(initialChatId?: string | null) {
     [activeChatId, activeChat, selectedNodeId]
   );
 
-  return {
-    chats,
-    activeChat,
-    activeChatId,
-    selectedNodeId,
-    streaming,
-    streamingText,
-    loading,
-    error,
-    isNewChatMode,
-    selectNode,
-    startNewChat,
-    deleteChat,
-    sendMessage,
-    setError,
-    setActiveChatId,
-    toggleBookmark,
-    deleteNode,
-  };
+  return (
+    <ChatContext.Provider
+      value={{
+        chats,
+        activeChat,
+        activeChatId,
+        selectedNodeId,
+        streaming,
+        streamingText,
+        loading,
+        error,
+        isNewChatMode,
+        selectNode,
+        startNewChat,
+        deleteChat,
+        sendMessage,
+        setError,
+        setActiveChatId,
+        toggleBookmark,
+        deleteNode,
+      }}
+    >
+      {children}
+    </ChatContext.Provider>
+  );
+}
+
+export function useChat() {
+  const context = useContext(ChatContext);
+  if (context === undefined) {
+    throw new Error('useChat must be used within a ChatProvider');
+  }
+  return context;
 }
