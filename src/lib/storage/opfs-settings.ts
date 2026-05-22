@@ -26,6 +26,7 @@ export const DEFAULT_SETTINGS: AppSettings = {
   },
   theme: 'system',
   graphRingSpacing: 90,
+  language: 'en',
 };
 
 export const DEPRECATED_MODELS = new Set([

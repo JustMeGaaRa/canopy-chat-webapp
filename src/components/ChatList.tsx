@@ -2,7 +2,8 @@
 
 import React from 'react';
 import { ChatMeta } from '@/lib/storage/types';
-import { Plus, Trash2, Settings, Menu } from 'lucide-react';
+import { useTranslation } from '@/hooks/useTranslation';
+import { Plus, Trash2, Settings } from 'lucide-react';
 
 interface ChatListProps {
   chats: ChatMeta[];
@@ -67,6 +68,8 @@ export default function ChatList({
   onToggleCollapse,
   onOpenSettings,
 }: ChatListProps) {
+  const { t } = useTranslation();
+
   return (
     <div
       className={`relative flex h-full flex-col transition-all duration-300 ease-in-out select-none ${
@@ -81,7 +84,7 @@ export default function ChatList({
           <button
             onClick={onToggleCollapse}
             className="group flex h-12 w-12 items-center justify-center rounded-full text-neutral-500 hover:bg-neutral-200/50 hover:text-neutral-900 dark:text-neutral-400 dark:hover:bg-[#2c2d30]/60 dark:hover:text-neutral-100 transition cursor-pointer"
-            title="Відкрити бічну панель"
+            title={t('openSidebar')}
           >
             <div className="group-hover:hidden">
               <SparkleIcon />
@@ -100,7 +103,7 @@ export default function ChatList({
           <button
             onClick={onToggleCollapse}
             className="hidden md:block rounded-full p-2 text-neutral-500 hover:bg-neutral-200/50 hover:text-neutral-900 dark:text-neutral-400 dark:hover:bg-[#2c2d30]/60 dark:hover:text-neutral-100 transition cursor-pointer"
-            title="Закрити бічну панель"
+            title={t('closeSidebar')}
           >
             <CollapseIcon />
           </button>
@@ -113,7 +116,7 @@ export default function ChatList({
           <button
             onClick={onNewChat}
             className="flex h-12 w-12 items-center justify-center rounded-full text-neutral-500 hover:bg-neutral-200/50 hover:text-neutral-900 dark:text-neutral-400 dark:hover:bg-[#2c2d30]/60 dark:hover:text-neutral-100 transition cursor-pointer"
-            title="Новий чат"
+            title={t('newChat')}
           >
             <Plus className="h-5 w-5" />
           </button>
@@ -124,10 +127,10 @@ export default function ChatList({
             <button
               onClick={onNewChat}
               className="inline-flex items-center gap-3 rounded-full bg-neutral-200/30 hover:bg-neutral-200/60 dark:bg-neutral-800/20 dark:hover:bg-neutral-800/55 py-2 px-4.5 text-[13px] font-semibold text-neutral-700 dark:text-neutral-300 transition-all duration-200 cursor-pointer"
-              title="Новий чат"
+              title={t('newChat')}
             >
               <Plus className="h-4.5 w-4.5 shrink-0 text-neutral-500 dark:text-neutral-400" />
-              <span>Новий чат</span>
+              <span>{t('newChat')}</span>
             </button>
           </div>
         </div>
@@ -137,7 +140,7 @@ export default function ChatList({
       {!isCollapsed && (
         <div className="flex-1 overflow-y-auto mt-4 scrollbar-thin">
           <div className="px-7.5 mb-1.5 text-[11px] font-semibold text-neutral-500 dark:text-neutral-400 uppercase tracking-wider select-none">
-            Нещодавні
+            {t('recent')}
           </div>
           <div className="space-y-0.5 px-3">
             {chats.map((chat) => {
@@ -156,7 +159,7 @@ export default function ChatList({
                     className="flex flex-1 items-center text-left overflow-hidden py-2 px-4 pr-10 rounded-full cursor-pointer"
                   >
                     <span className="truncate text-[13px] font-medium leading-snug">
-                      {chat.title || 'Untitled Chat'}
+                      {chat.title || t('untitledChat')}
                     </span>
                   </button>
 
@@ -166,7 +169,7 @@ export default function ChatList({
                       onDeleteChat(chat.id);
                     }}
                     className="absolute right-2.5 opacity-0 group-hover:opacity-100 rounded-full p-1.5 text-neutral-400 hover:bg-neutral-300/40 hover:text-red-500 dark:hover:bg-neutral-700/50 dark:hover:text-red-400 transition cursor-pointer"
-                    title="Delete Chat"
+                    title={t('deleteChat')}
                   >
                     <Trash2 className="h-3.5 w-3.5" />
                   </button>
@@ -183,7 +186,7 @@ export default function ChatList({
           <button
             onClick={onOpenSettings}
             className="flex h-12 w-12 items-center justify-center rounded-full text-neutral-500 hover:bg-neutral-200/50 hover:text-neutral-900 dark:text-neutral-400 dark:hover:bg-[#2c2d30]/60 dark:hover:text-neutral-100 transition cursor-pointer"
-            title="Налаштування"
+            title={t('settings')}
           >
             <Settings className="h-5 w-5 shrink-0" />
           </button>
@@ -193,10 +196,10 @@ export default function ChatList({
           <button
             onClick={onOpenSettings}
             className="flex w-full items-center gap-3 rounded-full px-4.5 py-2.5 text-[13px] font-medium text-neutral-700 dark:text-neutral-300 hover:bg-neutral-200/50 dark:hover:bg-[#2c2d30]/60 transition cursor-pointer"
-            title="Налаштування"
+            title={t('settings')}
           >
             <Settings className="h-4.5 w-4.5 shrink-0 text-neutral-500 dark:text-neutral-400" />
-            <span>Налаштування</span>
+            <span>{t('settings')}</span>
           </button>
         </div>
       )}

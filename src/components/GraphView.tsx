@@ -6,6 +6,7 @@ import type { ZoomBehavior } from 'd3-zoom';
 import { select } from 'd3-selection';
 import { Chat, ChatNode } from '@/lib/storage/types';
 import { useSettings } from '@/hooks/useSettings';
+import { useTranslation } from '@/hooks/useTranslation';
 import { computeRadialLayout } from '@/lib/graph-layout';
 import { GitFork, ZoomIn, ZoomOut, Target } from 'lucide-react';
 
@@ -41,6 +42,7 @@ export default function GraphView({
   onToggleCollapse,
 }: GraphViewProps) {
   const { settings } = useSettings();
+  const { t } = useTranslation();
   const svgRef = useRef<SVGSVGElement | null>(null);
   const gRef = useRef<SVGGElement | null>(null);
   const containerRef = useRef<HTMLDivElement | null>(null);
@@ -241,7 +243,7 @@ export default function GraphView({
           <div className="max-w-xs space-y-2">
             <GitFork className="mx-auto h-8 w-8 text-neutral-300 dark:text-neutral-700" />
             <p className="text-xs font-semibold text-neutral-400 dark:text-neutral-500 font-sans">
-              No active tree. Start typing in the chat to generate a radial conversation layout.
+              {t('noActiveTree')}
             </p>
           </div>
         </div>
@@ -252,7 +254,7 @@ export default function GraphView({
             <button
               onClick={onToggleCollapse}
               className="absolute top-3 left-3 z-20 hidden lg:flex items-center justify-center rounded-full p-2 text-neutral-500 hover:bg-neutral-200/50 hover:text-neutral-900 dark:text-neutral-400 dark:hover:bg-[#2c2d30]/60 dark:hover:text-neutral-100 transition cursor-pointer"
-              title="Закрити бічну панель"
+              title={t('closeSidebar')}
             >
               <CollapseIcon />
             </button>
@@ -264,9 +266,9 @@ export default function GraphView({
               <button
                 onClick={onCloseMobile}
                 className="rounded-xl bg-white border border-neutral-200/60 px-3 py-2 text-xs font-semibold text-neutral-500 hover:bg-neutral-50 dark:bg-neutral-900 dark:border-neutral-800 dark:text-neutral-400 dark:hover:bg-neutral-800 transition shadow-sm md:hidden"
-                title="Back to Chat"
+                title={t('backToChat')}
               >
-                Close Graph
+                {t('closeGraph')}
               </button>
             )}
 
@@ -274,21 +276,21 @@ export default function GraphView({
               <button
                 onClick={handleZoomIn}
                 className="p-2 text-neutral-500 hover:bg-neutral-50 dark:text-neutral-400 dark:hover:bg-neutral-800 transition cursor-pointer"
-                title="Zoom In"
+                title={t('zoomIn')}
               >
                 <ZoomIn className="h-4.5 w-4.5" />
               </button>
               <button
                 onClick={handleZoomOut}
                 className="p-2 text-neutral-500 hover:bg-neutral-50 dark:text-neutral-400 dark:hover:bg-neutral-800 transition cursor-pointer"
-                title="Zoom Out"
+                title={t('zoomOut')}
               >
                 <ZoomOut className="h-4.5 w-4.5" />
               </button>
               <button
                 onClick={handleCenter}
                 className="p-2 text-neutral-500 hover:bg-neutral-50 dark:text-neutral-400 dark:hover:bg-neutral-800 transition cursor-pointer"
-                title="Centre & Reset Zoom"
+                title={t('centreReset')}
               >
                 <Target className="h-4.5 w-4.5" />
               </button>

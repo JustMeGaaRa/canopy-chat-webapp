@@ -139,6 +139,7 @@ export function ChatProvider({ children }: { children: React.ReactNode }) {
 
   // Fetch initial chats list
   useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     loadChatsList();
   }, [loadChatsList]);
 
@@ -152,6 +153,7 @@ export function ChatProvider({ children }: { children: React.ReactNode }) {
       loadChat(activeChatId);
       setIsNewChatMode(false);
     } else {
+      // eslint-disable-next-line react-hooks/set-state-in-effect
       setActiveChat(null);
       setSelectedNodeId(null);
       setIsNewChatMode(true);

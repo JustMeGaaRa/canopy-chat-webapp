@@ -10,6 +10,7 @@ export interface AppSettings {
   providerModels: Record<string, string[]>;
   theme: 'light' | 'dark' | 'system';
   graphRingSpacing: number;
+  language: 'en' | 'uk';
 }
 
 const SETTINGS_FILE = path.join(os.homedir(), '.canopy', 'settings.json');
@@ -57,6 +58,7 @@ const DEFAULT_SETTINGS: AppSettings = {
   },
   theme: 'system',
   graphRingSpacing: 90,
+  language: 'en',
 };
 
 export async function getSettings(): Promise<AppSettings> {

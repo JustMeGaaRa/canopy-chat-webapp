@@ -4,6 +4,7 @@ import React, { useState, useRef, useEffect } from 'react';
 import { Chat, ChatNode } from '@/lib/storage/types';
 import MessageBubble from './MessageBubble';
 import { useSettings } from '@/hooks/useSettings';
+import { useTranslation } from '@/hooks/useTranslation';
 import {
   Send,
   GitFork,
@@ -12,12 +13,10 @@ import {
   HelpCircle,
   Menu,
   Network,
-  Bot,
   Plus,
   Mic,
   ChevronDown,
   Check,
-  Bookmark,
 } from 'lucide-react';
 
 interface ChatThreadProps {
@@ -75,6 +74,7 @@ interface TimelinePointProps {
 
 function TimelinePoint({ node, isBookmarked, topPercent, onScrollToMessage }: TimelinePointProps) {
   const [hovered, setHovered] = useState(false);
+  const { t } = useTranslation();
 
   const previewText = React.useMemo(() => {
     const text = node.content;
@@ -100,7 +100,7 @@ function TimelinePoint({ node, isBookmarked, topPercent, onScrollToMessage }: Ti
       {hovered && (
         <div className="absolute right-7 top-1/2 -translate-y-1/2 bg-neutral-900/90 dark:bg-neutral-800/95 text-white dark:text-neutral-100 text-xs px-3 py-1.5 rounded-lg shadow-lg border border-neutral-700/50 backdrop-blur-xs whitespace-nowrap overflow-hidden text-ellipsis max-w-[220px] pointer-events-none z-50 animate-in fade-in slide-in-from-right-1 duration-150">
           <div className="font-semibold text-[9px] uppercase tracking-wider text-neutral-400 mb-0.5">
-            {node.role === 'user' ? 'User' : 'Assistant'}
+            {node.role === 'user' ? t('user') : t('assistant')}
           </div>
           <div className="truncate font-sans">{previewText}</div>
         </div>
@@ -149,6 +149,7 @@ export default function ChatThread({
   onDeleteNode,
 }: ChatThreadProps) {
   const { settings, updateSettings, hasKey, envKeys } = useSettings();
+  const { t } = useTranslation();
   const [input, setInput] = useState('');
   const [sending, setSending] = useState(false);
   const [showDropdown, setShowDropdown] = useState(false);
@@ -345,7 +346,7 @@ export default function ChatThread({
         <div className="flex h-14 items-center justify-start gap-2 px-4 border-b border-neutral-200/60 dark:border-neutral-800/60 md:hidden shrink-0">
           <button
             onClick={onOpenSidebarMobile}
-            className="rounded-lg p-1.5 text-neutral-500 hover:bg-neutral-100 dark:text-neutral-400 dark:hover:bg-neutral-800 transition"
+            className="rounded-lg p-1.5 text-neutral-500 hover:bg-neutral-100 dark:text-neutral-400 dark:hover:bg-neutral-800 transition shrink-0"
           >
             <Menu className="h-5 w-5" />
           </button>
@@ -357,25 +358,26 @@ export default function ChatThread({
             <AlertCircle className="h-10 w-10 animate-pulse" />
           </div>
           <h3 className="text-lg font-bold text-neutral-900 dark:text-neutral-100 font-sans">
-            {providerLabel} API Key Required
+            {t('apiKeyRequired', { provider: providerLabel })}
           </h3>
           <p className="text-sm text-neutral-500 dark:text-neutral-400 leading-relaxed font-sans">
-            Canopy relies on {providerLabel} to generate responses. Please set the{' '}
-            <code className="rounded-md bg-neutral-100 dark:bg-neutral-800 px-1 py-0.5 font-mono text-xs">
-              {envVarName}
-            </code>{' '}
-            variable in your{' '}
-            <code className="rounded-md bg-neutral-100 dark:bg-neutral-800 px-1 py-0.5 font-mono text-xs">
-              .env.local
-            </code>{' '}
-            file, or click the button below to provide a key override in settings.
+            {t('apiKeyRequiredDesc', { provider: providerLabel, envVar: envVarName }).split(envVarName).map((part, index, arr) => (
+              <React.Fragment key={index}>
+                {part}
+                {index < arr.length - 1 && (
+                  <code className="rounded-md bg-neutral-100 dark:bg-neutral-800 px-1 py-0.5 font-mono text-xs">
+                    {envVarName}
+                  </code>
+                )}
+              </React.Fragment>
+            ))}
           </p>
           <button
             onClick={onOpenSettings}
             className="flex items-center gap-2 rounded-xl bg-blue-600 px-5 py-2.5 text-sm font-semibold text-white hover:bg-blue-500 shadow-md shadow-blue-500/10 transition"
           >
             <Settings className="h-4.5 w-4.5" />
-            <span>Open Settings</span>
+            <span>{t('openSettings')}</span>
           </button>
         </div>
       </div>
@@ -391,12 +393,12 @@ export default function ChatThread({
           <button
             onClick={onOpenSidebarMobile}
             className="rounded-lg p-1.5 text-neutral-500 hover:bg-neutral-100 dark:text-neutral-400 dark:hover:bg-neutral-800 transition md:hidden"
-            title="Open Conversations"
+            title={t('openConversations')}
           >
             <Menu className="h-5 w-5" />
           </button>
           <span className="text-sm font-bold text-neutral-800 dark:text-neutral-100 font-sans truncate">
-            {isNewChatMode ? 'New Conversation' : activeChat?.title || 'Loading Chat...'}
+            {isNewChatMode ? t('newConversation') : activeChat?.title || t('loadingChat')}
           </span>
         </div>
 
@@ -405,7 +407,7 @@ export default function ChatThread({
           <button
             onClick={onOpenGraphMobile}
             className="rounded-lg p-1.5 text-neutral-500 hover:bg-neutral-100 dark:text-neutral-400 dark:hover:bg-neutral-800 transition md:hidden"
-            title="View Graph"
+            title={t('viewGraph')}
           >
             <Network className="h-5 w-5" />
           </button>
@@ -419,7 +421,7 @@ export default function ChatThread({
                   ? 'text-neutral-500 hover:bg-neutral-100 hover:text-neutral-900 dark:text-neutral-400 dark:hover:bg-neutral-800 dark:hover:text-neutral-100'
                   : 'bg-neutral-200/50 text-neutral-800 hover:bg-neutral-200 dark:bg-neutral-800/50 dark:text-neutral-200 dark:hover:bg-neutral-800'
               }`}
-              title={isGraphCollapsed ? 'Відкрити бічну панель' : 'Закрити бічну панель'}
+              title={isGraphCollapsed ? t('openSidebar') : t('closeSidebar')}
             >
               <div className="group-hover:hidden">
                 <GitFork className="h-4.5 w-4.5" />
@@ -444,11 +446,10 @@ export default function ChatThread({
                 <HelpCircle className="h-8 w-8" />
               </div>
               <h2 className="text-xl font-bold text-neutral-900 dark:text-neutral-50 font-sans">
-                Welcome to Canopy
+                {t('welcomeTitle')}
               </h2>
               <p className="text-sm text-neutral-400 dark:text-neutral-500 max-w-sm font-sans leading-relaxed">
-                Start chatting below. You can click on any message or node in the radial graph on
-                the right to branch out and create parallel lines of conversation.
+                {t('welcomeDesc')}
               </p>
             </div>
           ) : (
@@ -526,7 +527,7 @@ export default function ChatThread({
             <div className="flex items-center gap-1.5 rounded-lg bg-amber-50/80 dark:bg-amber-950/20 border border-amber-200/60 dark:border-amber-900/40 px-3 py-1.5 text-xs text-amber-800 dark:text-amber-400 transition-all font-sans font-medium">
               <GitFork className="h-3.5 w-3.5 shrink-0" />
               <span className="truncate">
-                Branching from:{' '}
+                {t('branchingFrom')}{' '}
                 <strong className="font-semibold italic">&quot;{selectedNodeSnippet}&quot;</strong>
               </span>
             </div>
@@ -543,7 +544,7 @@ export default function ChatThread({
                 onClick={() => setError(null)}
                 className="text-xs font-semibold text-red-500 hover:text-red-600 dark:hover:text-red-400 shrink-0 cursor-pointer"
               >
-                Dismiss
+                {t('dismiss')}
               </button>
             </div>
           )}
@@ -559,7 +560,7 @@ export default function ChatThread({
                   handleSubmit(e);
                 }
               }}
-              placeholder="Ask anything, @ to mention, / for actions"
+              placeholder={t('textareaPlaceholder')}
               disabled={sending || streaming}
               className="w-full resize-none bg-transparent border-0 outline-hidden focus:ring-0 focus:outline-hidden text-sm text-neutral-900 dark:text-neutral-50 placeholder-neutral-400 dark:placeholder-neutral-500 max-h-36 font-sans px-3 pt-2 pb-2.5"
             />
@@ -570,7 +571,7 @@ export default function ChatThread({
                 <button
                   type="button"
                   className="p-1.5 rounded-lg text-neutral-400 hover:text-neutral-600 dark:hover:text-neutral-200 hover:bg-neutral-100 dark:hover:bg-neutral-800 transition-colors"
-                  title="Add context"
+                  title={t('addContext')}
                 >
                   <Plus className="h-4.5 w-4.5" />
                 </button>
@@ -646,7 +647,7 @@ export default function ChatThread({
                     type="submit"
                     disabled={sending || streaming}
                     className="rounded-full bg-blue-600 p-2 text-white hover:bg-blue-500 disabled:bg-neutral-100 disabled:text-neutral-400 dark:disabled:bg-neutral-800 dark:disabled:text-neutral-600 transition shadow-sm cursor-pointer"
-                    title="Send message"
+                    title={t('sendMessage')}
                   >
                     <Send className="h-4 w-4" />
                   </button>
@@ -655,9 +656,9 @@ export default function ChatThread({
                     type="button"
                     className="rounded-full bg-neutral-200/60 p-2 text-neutral-500 dark:bg-neutral-800 dark:text-neutral-400 hover:bg-neutral-300/60 dark:hover:bg-neutral-700 transition cursor-pointer"
                     onClick={() => {
-                      alert('Speech typing functionality is not configured.');
+                      alert(t('speechAlert'));
                     }}
-                    title="Voice input"
+                    title={t('voiceInput')}
                   >
                     <Mic className="h-4 w-4" />
                   </button>

@@ -1,6 +1,7 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
+import { useTranslation } from '@/hooks/useTranslation';
 import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
 import rehypeHighlight from 'rehype-highlight';
@@ -27,6 +28,7 @@ export default function MessageBubble({
   onDelete,
 }: MessageBubbleProps) {
   const isUser = role === 'user';
+  const { t } = useTranslation();
   const [copied, setCopied] = useState(false);
   const [menuOpen, setMenuOpen] = useState(false);
   const [formattedTime, setFormattedTime] = useState('');
@@ -35,6 +37,7 @@ export default function MessageBubble({
     if (createdAt) {
       try {
         const date = new Date(createdAt);
+        // eslint-disable-next-line react-hooks/set-state-in-effect
         setFormattedTime(date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }));
       } catch (err) {
         console.error(err);
@@ -71,7 +74,7 @@ export default function MessageBubble({
                 {isBookmarked && (
                   <div
                     className="absolute -left-2 -top-2 bg-amber-500 text-white dark:bg-amber-400 dark:text-neutral-900 rounded-full p-1 shadow-md z-10 flex items-center justify-center border border-white dark:border-[#131314]"
-                    title="Bookmarked message"
+                    title={t('bookmarkedMsg')}
                   >
                     <Bookmark className="h-3 w-3 fill-current" />
                   </div>
@@ -89,7 +92,7 @@ export default function MessageBubble({
                 <button
                   onClick={handleCopy}
                   className="p-1 rounded-lg hover:bg-neutral-200 dark:hover:bg-neutral-700 text-neutral-500 dark:text-neutral-400 hover:text-neutral-700 dark:hover:text-neutral-200 transition cursor-pointer"
-                  title="Copy to clipboard"
+                  title={t('copyToClipboard')}
                 >
                   {copied ? (
                     <Check className="h-3 w-3 text-emerald-500" />
@@ -103,7 +106,7 @@ export default function MessageBubble({
                     <button
                       onClick={() => setMenuOpen(!menuOpen)}
                       className="p-1 rounded-lg hover:bg-neutral-200 dark:hover:bg-neutral-700 text-neutral-500 dark:text-neutral-400 hover:text-neutral-700 dark:hover:text-neutral-200 transition cursor-pointer"
-                      title="More actions"
+                      title={t('moreActions')}
                     >
                       <MoreHorizontal className="h-3 w-3" />
                     </button>
@@ -123,7 +126,7 @@ export default function MessageBubble({
                                 isBookmarked ? 'fill-amber-500 text-amber-500' : 'text-neutral-400'
                               }`}
                             />
-                            <span>{isBookmarked ? 'Unbookmark' : 'Bookmark'}</span>
+                            <span>{isBookmarked ? t('unbookmark') : t('bookmark')}</span>
                           </button>
                           <button
                             onClick={() => {
@@ -133,7 +136,7 @@ export default function MessageBubble({
                             className="w-full flex items-center gap-2 px-2.5 py-1.5 rounded-lg text-left text-xs font-semibold text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-950/30 transition cursor-pointer"
                           >
                             <Trash2 className="h-3.5 w-3.5" />
-                            <span>Delete</span>
+                            <span>{t('delete')}</span>
                           </button>
                         </div>
                       </>
@@ -148,7 +151,7 @@ export default function MessageBubble({
               {isBookmarked && (
                 <div
                   className="absolute -left-2 -top-2 bg-amber-500 text-white dark:bg-amber-400 dark:text-neutral-900 rounded-full p-1 shadow-md z-10 flex items-center justify-center border border-white dark:border-[#131314]"
-                  title="Bookmarked message"
+                  title={t('bookmarkedMsg')}
                 >
                   <Bookmark className="h-3 w-3 fill-current" />
                 </div>
@@ -216,7 +219,7 @@ export default function MessageBubble({
                 <button
                   onClick={handleCopy}
                   className="p-1 rounded-lg hover:bg-neutral-200 dark:hover:bg-neutral-700 text-neutral-500 dark:text-neutral-400 hover:text-neutral-700 dark:hover:text-neutral-200 transition cursor-pointer"
-                  title="Copy to clipboard"
+                  title={t('copyToClipboard')}
                 >
                   {copied ? (
                     <Check className="h-3 w-3 text-emerald-500" />
