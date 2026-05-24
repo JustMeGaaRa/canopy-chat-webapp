@@ -17,7 +17,8 @@ export const translations = {
     geminiApiKeyLabel: 'Gemini API Key',
     apiKeyOverridePlaceholder: 'Enter API key override for {provider}...',
     keyLoadedFromEnv: 'Loaded from environment',
-    localSaveNotice: 'Your key is saved locally in your user configuration file and is never uploaded elsewhere.',
+    localSaveNotice:
+      'Your key is saved locally in your user configuration file and is never uploaded elsewhere.',
     modelsManagementLabel: 'Models Management per Provider',
     configureProviderLabel: 'Configure Provider:',
     noModelsRegistered: 'No models registered. Add one below.',
@@ -45,14 +46,16 @@ export const translations = {
     user: 'User',
     assistant: 'Assistant',
     apiKeyRequired: '{provider} API Key Required',
-    apiKeyRequiredDesc: 'Canopy relies on {provider} to generate responses. Please set the {envVar} variable in your .env.local file, or click the button below to provide a key override in settings.',
+    apiKeyRequiredDesc:
+      'Canopy relies on {provider} to generate responses. Please set the {envVar} variable in your .env.local file, or click the button below to provide a key override in settings.',
     openSettings: 'Open Settings',
     openConversations: 'Open Conversations',
     newConversation: 'New Conversation',
     loadingChat: 'Loading Chat...',
     viewGraph: 'View Graph',
     welcomeTitle: 'Welcome to Canopy',
-    welcomeDesc: 'Start chatting below. You can click on any message or node in the radial graph on the right to branch out and create parallel lines of conversation.',
+    welcomeDesc:
+      'Start chatting below. You can click on any message or node in the radial graph on the right to branch out and create parallel lines of conversation.',
     branchingFrom: 'Branching from:',
     dismiss: 'Dismiss',
     textareaPlaceholder: 'Ask anything...',
@@ -62,7 +65,8 @@ export const translations = {
     sendMessage: 'Send message',
 
     // GraphView
-    noActiveTree: 'No active tree. Start typing in the chat to generate a radial conversation layout.',
+    noActiveTree:
+      'No active tree. Start typing in the chat to generate a radial conversation layout.',
     closeGraph: 'Close Graph',
     backToChat: 'Back to Chat',
     zoomIn: 'Zoom In',
@@ -91,7 +95,8 @@ export const translations = {
     geminiApiKeyLabel: 'API-ключ Gemini',
     apiKeyOverridePlaceholder: 'Введіть ключ для {provider}...',
     keyLoadedFromEnv: 'Завантажено з оточення',
-    localSaveNotice: 'Ваш ключ зберігається локально у файлі конфігурації та нікуди не завантажується.',
+    localSaveNotice:
+      'Ваш ключ зберігається локально у файлі конфігурації та нікуди не завантажується.',
     modelsManagementLabel: 'Управління моделями',
     configureProviderLabel: 'Налаштувати провайдера:',
     noModelsRegistered: 'Моделей не зареєстровано. Додайте нижче.',
@@ -119,14 +124,16 @@ export const translations = {
     user: 'Користувач',
     assistant: 'Асистент',
     apiKeyRequired: 'Необхідно вказати API-ключ {provider}',
-    apiKeyRequiredDesc: 'Canopy використовує {provider} для генерації відповідей. Будь ласка, встановіть змінну {envVar} у вашому файлі .env.local або натисніть кнопку нижче, щоб додати ключ у налаштуваннях.',
+    apiKeyRequiredDesc:
+      'Canopy використовує {provider} для генерації відповідей. Будь ласка, встановіть змінну {envVar} у вашому файлі .env.local або натисніть кнопку нижче, щоб додати ключ у налаштуваннях.',
     openSettings: 'Відкрити налаштування',
     openConversations: 'Відкрити розмови',
     newConversation: 'Нова розмова',
     loadingChat: 'Завантаження чату...',
     viewGraph: 'Переглянути граф',
     welcomeTitle: 'Ласкаво просимо до Canopy',
-    welcomeDesc: 'Почніть спілкування нижче. Ви можете натиснути на будь-яке повідомлення або вузол на радіальному графі праворуч, щоб створити нову гілку розмови.',
+    welcomeDesc:
+      'Почніть спілкування нижче. Ви можете натиснути на будь-яке повідомлення або вузол на радіальному графі праворуч, щоб створити нову гілку розмови.',
     branchingFrom: 'Гілка від:',
     dismiss: 'Приховати',
     textareaPlaceholder: 'Запитайте про що завгодно...',
@@ -136,7 +143,8 @@ export const translations = {
     sendMessage: 'Надіслати повідомлення',
 
     // GraphView
-    noActiveTree: 'Немає активного дерева. Почніть писати в чаті, щоб згенерувати радіальну карту розмови.',
+    noActiveTree:
+      'Немає активного дерева. Почніть писати в чаті, щоб згенерувати радіальну карту розмови.',
     closeGraph: 'Закрити граф',
     backToChat: 'Назад до чату',
     zoomIn: 'Збільшити',
@@ -157,7 +165,7 @@ export function useTranslation() {
   const { settings } = useSettings();
   const lang = settings?.language || 'en';
 
-  const t = (key: keyof typeof translations['en'], params?: Record<string, string>) => {
+  const t = (key: keyof (typeof translations)['en'], params?: Record<string, string>) => {
     let text = translations[lang]?.[key] || translations['en']?.[key] || (key as string);
     if (params) {
       Object.entries(params).forEach(([k, v]) => {

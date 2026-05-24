@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import { useState, useEffect } from 'react';
 import { useSettings } from '@/hooks/useSettings';
 import { useTranslation } from '@/hooks/useTranslation';
 import { X, Moon, Sun, Monitor, Shield, Settings2, Trash2, Languages } from 'lucide-react';
@@ -216,7 +216,9 @@ export default function SettingsModal({ isOpen, onClose }: SettingsModalProps) {
                 </div>
                 <input
                   type="password"
-                  placeholder={t('apiKeyOverridePlaceholder', { provider: getProviderLabel(localProviderId) })}
+                  placeholder={t('apiKeyOverridePlaceholder', {
+                    provider: getProviderLabel(localProviderId),
+                  })}
                   value={localProviderKeys[localProviderId] || ''}
                   onChange={(e) => {
                     setLocalProviderKeys({

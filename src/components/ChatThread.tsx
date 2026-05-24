@@ -37,34 +37,6 @@ interface ChatThreadProps {
   onDeleteNode?: (id: string) => Promise<void>;
 }
 
-const CollapseIcon = () => (
-  <svg
-    viewBox="0 0 24 24"
-    className="h-4.5 w-4.5 fill-none stroke-current"
-    strokeWidth="2"
-    strokeLinecap="round"
-    strokeLinejoin="round"
-  >
-    <rect x="3" y="3" width="18" height="18" rx="2" />
-    <line x1="15" y1="3" x2="15" y2="21" />
-    <path d="M8 9l3 3-3 3" />
-  </svg>
-);
-
-const ExpandIcon = () => (
-  <svg
-    viewBox="0 0 24 24"
-    className="h-4.5 w-4.5 fill-none stroke-current"
-    strokeWidth="2"
-    strokeLinecap="round"
-    strokeLinejoin="round"
-  >
-    <rect x="3" y="3" width="18" height="18" rx="2" />
-    <line x1="15" y1="3" x2="15" y2="21" />
-    <path d="M11 15l-3-3 3-3" />
-  </svg>
-);
-
 interface TimelinePointProps {
   node: ChatNode;
   isBookmarked: boolean;
@@ -361,16 +333,18 @@ export default function ChatThread({
             {t('apiKeyRequired', { provider: providerLabel })}
           </h3>
           <p className="text-sm text-neutral-500 dark:text-neutral-400 leading-relaxed font-sans">
-            {t('apiKeyRequiredDesc', { provider: providerLabel, envVar: envVarName }).split(envVarName).map((part, index, arr) => (
-              <React.Fragment key={index}>
-                {part}
-                {index < arr.length - 1 && (
-                  <code className="rounded-md bg-neutral-100 dark:bg-neutral-800 px-1 py-0.5 font-mono text-xs">
-                    {envVarName}
-                  </code>
-                )}
-              </React.Fragment>
-            ))}
+            {t('apiKeyRequiredDesc', { provider: providerLabel, envVar: envVarName })
+              .split(envVarName)
+              .map((part, index, arr) => (
+                <React.Fragment key={index}>
+                  {part}
+                  {index < arr.length - 1 && (
+                    <code className="rounded-md bg-neutral-100 dark:bg-neutral-800 px-1 py-0.5 font-mono text-xs">
+                      {envVarName}
+                    </code>
+                  )}
+                </React.Fragment>
+              ))}
           </p>
           <button
             onClick={onOpenSettings}

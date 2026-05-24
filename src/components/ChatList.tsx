@@ -1,6 +1,5 @@
 'use client';
 
-import React from 'react';
 import { ChatMeta } from '@/lib/storage/types';
 import { useTranslation } from '@/hooks/useTranslation';
 import { Plus, Trash2, Settings } from 'lucide-react';
