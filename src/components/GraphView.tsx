@@ -233,13 +233,13 @@ export default function GraphView({
   return (
     <div
       ref={containerRef}
-      className="relative h-full w-full overflow-hidden bg-neutral-50/30 dark:bg-neutral-950/20 select-none"
+      className="relative h-full w-full overflow-hidden bg-[#f0f4f9] dark:bg-[#1e1f20] select-none"
     >
       {/* Dot-grid background — behind everything */}
       <div className="absolute inset-0 bg-[radial-gradient(#e5e7eb_1px,transparent_1px)] dark:bg-[radial-gradient(#27272a_1px,transparent_1px)] [background-size:16px_16px] pointer-events-none z-0" />
 
       {isEmpty ? (
-        <div className="absolute inset-0 z-20 flex h-full items-center justify-center bg-neutral-50/50 dark:bg-neutral-900/30 p-6 text-center select-none">
+        <div className="absolute inset-0 z-20 flex h-full items-center justify-center bg-transparent p-6 text-center select-none">
           <div className="max-w-xs space-y-2">
             <GitFork className="mx-auto h-8 w-8 text-neutral-300 dark:text-neutral-700" />
             <p className="text-xs font-semibold text-neutral-400 dark:text-neutral-500 font-sans">
@@ -262,16 +262,6 @@ export default function GraphView({
 
           {/* Zoom / centre controls — z-20 */}
           <div className="absolute bottom-4 right-4 z-20 flex flex-col sm:flex-row gap-2 pointer-events-auto">
-            {onCloseMobile && (
-              <button
-                onClick={onCloseMobile}
-                className="rounded-xl bg-white border border-neutral-200/60 px-3 py-2 text-xs font-semibold text-neutral-500 hover:bg-neutral-50 dark:bg-neutral-900 dark:border-neutral-800 dark:text-neutral-400 dark:hover:bg-neutral-800 transition shadow-sm md:hidden"
-                title={t('backToChat')}
-              >
-                {t('closeGraph')}
-              </button>
-            )}
-
             <div className="flex bg-white border border-neutral-200/60 dark:bg-neutral-900 dark:border-neutral-800 rounded-xl overflow-hidden shadow-sm divide-x divide-neutral-200/60 dark:divide-neutral-800">
               <button
                 onClick={handleZoomIn}
@@ -297,6 +287,17 @@ export default function GraphView({
             </div>
           </div>
         </>
+      )}
+
+      {/* Always-visible Mobile Close Button */}
+      {onCloseMobile && (
+        <button
+          onClick={onCloseMobile}
+          className="absolute top-3 right-3 z-30 md:hidden rounded-xl bg-white border border-neutral-200/60 px-3 py-2 text-xs font-semibold text-neutral-500 hover:bg-neutral-50 dark:bg-neutral-900 dark:border-neutral-800 dark:text-neutral-400 dark:hover:bg-neutral-800 transition shadow-sm"
+          title={t('backToChat')}
+        >
+          {t('closeGraph')}
+        </button>
       )}
 
       {/* SVG — z-10, sits above dot grid but below buttons */}

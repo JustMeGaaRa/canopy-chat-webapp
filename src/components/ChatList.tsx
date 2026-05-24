@@ -80,29 +80,29 @@ export default function ChatList({
     >
       {/* Sidebar Header */}
       {isCollapsed ? (
-        <div className="flex flex-col items-center pt-3 pb-2 shrink-0">
+        <div className="flex h-14 items-center justify-center shrink-0">
           <button
             onClick={onToggleCollapse}
-            className="group flex h-12 w-12 items-center justify-center rounded-full text-neutral-500 hover:bg-neutral-200/50 hover:text-neutral-900 dark:text-neutral-400 dark:hover:bg-[#2c2d30]/60 dark:hover:text-neutral-100 transition cursor-pointer"
+            className="group flex h-10 w-10 items-center justify-center rounded-full text-neutral-500 hover:bg-neutral-200/50 hover:text-neutral-900 dark:text-neutral-400 dark:hover:bg-[#2c2d30]/60 dark:hover:text-neutral-100 transition cursor-pointer"
             title={t('openSidebar')}
           >
-            <div className="group-hover:hidden">
+            <div className="group-hover:hidden flex items-center justify-center">
               <SparkleIcon />
             </div>
-            <div className="hidden group-hover:block">
+            <div className="hidden group-hover:flex items-center justify-center">
               <ExpandIcon />
             </div>
           </button>
         </div>
       ) : (
-        <div className="flex h-14 items-center justify-between px-4.5 shrink-0">
-          <div className="flex items-center gap-2 font-sans font-semibold text-lg text-neutral-800 dark:text-neutral-200 tracking-tight">
+        <div className="flex h-14 items-center justify-between pl-4.5 pr-2 shrink-0">
+          <div className="flex items-center gap-3 font-sans font-semibold text-lg text-neutral-800 dark:text-neutral-200 tracking-tight">
             <SparkleIcon />
             <span>Canopy</span>
           </div>
           <button
             onClick={onToggleCollapse}
-            className="hidden md:block rounded-full p-2 text-neutral-500 hover:bg-neutral-200/50 hover:text-neutral-900 dark:text-neutral-400 dark:hover:bg-[#2c2d30]/60 dark:hover:text-neutral-100 transition cursor-pointer"
+            className="hidden md:flex h-10 w-10 items-center justify-center rounded-full text-neutral-500 hover:bg-neutral-200/50 hover:text-neutral-900 dark:text-neutral-400 dark:hover:bg-[#2c2d30]/60 dark:hover:text-neutral-100 transition cursor-pointer"
             title={t('closeSidebar')}
           >
             <CollapseIcon />
@@ -115,21 +115,21 @@ export default function ChatList({
         <div className="flex flex-col items-center py-2 shrink-0">
           <button
             onClick={onNewChat}
-            className="flex h-12 w-12 items-center justify-center rounded-full text-neutral-500 hover:bg-neutral-200/50 hover:text-neutral-900 dark:text-neutral-400 dark:hover:bg-[#2c2d30]/60 dark:hover:text-neutral-100 transition cursor-pointer"
+            className="flex h-10 w-10 items-center justify-center rounded-full text-neutral-500 hover:bg-neutral-200/50 hover:text-neutral-900 dark:text-neutral-400 dark:hover:bg-[#2c2d30]/60 dark:hover:text-neutral-100 transition cursor-pointer"
             title={t('newChat')}
           >
             <Plus className="h-5 w-5" />
           </button>
         </div>
       ) : (
-        <div className="px-4.5 py-2 shrink-0">
+        <div className="px-3 py-2 shrink-0">
           <div className="py-1">
             <button
               onClick={onNewChat}
-              className="inline-flex items-center gap-3 rounded-full bg-neutral-200/30 hover:bg-neutral-200/60 dark:bg-neutral-800/20 dark:hover:bg-neutral-800/55 py-2 px-4.5 text-[13px] font-semibold text-neutral-700 dark:text-neutral-300 transition-all duration-200 cursor-pointer"
+              className="flex w-full items-center gap-3 rounded-full px-4.5 py-2.5 text-[13px] font-medium text-neutral-700 dark:text-neutral-300 hover:bg-neutral-200/50 dark:hover:bg-[#2c2d30]/60 transition cursor-pointer"
               title={t('newChat')}
             >
-              <Plus className="h-4.5 w-4.5 shrink-0 text-neutral-500 dark:text-neutral-400" />
+              <Plus className="h-5 w-5 shrink-0 text-neutral-500 dark:text-neutral-400" />
               <span>{t('newChat')}</span>
             </button>
           </div>
@@ -185,7 +185,7 @@ export default function ChatList({
         <div className="mt-auto flex flex-col items-center py-4 shrink-0">
           <button
             onClick={onOpenSettings}
-            className="flex h-12 w-12 items-center justify-center rounded-full text-neutral-500 hover:bg-neutral-200/50 hover:text-neutral-900 dark:text-neutral-400 dark:hover:bg-[#2c2d30]/60 dark:hover:text-neutral-100 transition cursor-pointer"
+            className="flex h-10 w-10 items-center justify-center rounded-full text-neutral-500 hover:bg-neutral-200/50 hover:text-neutral-900 dark:text-neutral-400 dark:hover:bg-[#2c2d30]/60 dark:hover:text-neutral-100 transition cursor-pointer"
             title={t('settings')}
           >
             <Settings className="h-5 w-5 shrink-0" />
@@ -198,7 +198,7 @@ export default function ChatList({
             className="flex w-full items-center gap-3 rounded-full px-4.5 py-2.5 text-[13px] font-medium text-neutral-700 dark:text-neutral-300 hover:bg-neutral-200/50 dark:hover:bg-[#2c2d30]/60 transition cursor-pointer"
             title={t('settings')}
           >
-            <Settings className="h-4.5 w-4.5 shrink-0 text-neutral-500 dark:text-neutral-400" />
+            <Settings className="h-5 w-5 shrink-0 text-neutral-500 dark:text-neutral-400" />
             <span>{t('settings')}</span>
           </button>
         </div>
