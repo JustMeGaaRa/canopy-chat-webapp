@@ -17,6 +17,7 @@ import {
   Mic,
   ChevronDown,
   Check,
+  Sparkles,
 } from 'lucide-react';
 
 interface ChatThreadProps {
@@ -25,7 +26,7 @@ interface ChatThreadProps {
   streaming: boolean;
   streamingText: string;
   isNewChatMode: boolean;
-  onSendMessage: (content: string) => Promise<void>;
+  onSendMessage: (content: string, overrideParentId?: string | null) => Promise<void>;
   onOpenSettings: () => void;
   onOpenSidebarMobile: () => void;
   onOpenGraphMobile: () => void;
@@ -103,6 +104,23 @@ const formatModelName = (modelId: string) => {
     .join(' ');
 };
 
+function getMessageIdFromSelection(selection: Selection): string | null {
+  if (!selection || selection.rangeCount === 0) return null;
+  const range = selection.getRangeAt(0);
+  let node: Node | null = range.commonAncestorContainer;
+  
+  while (node) {
+    if (node instanceof HTMLElement) {
+      const idAttr = node.getAttribute('id');
+      if (idAttr && idAttr.startsWith('msg-')) {
+        return idAttr.replace('msg-', '');
+      }
+    }
+    node = node.parentNode;
+  }
+  return null;
+}
+
 export default function ChatThread({
   activeChat,
   selectedNodeId,
@@ -121,12 +139,142 @@ export default function ChatThread({
   onDeleteNode,
 }: ChatThreadProps) {
   const { settings, updateSettings, hasKey, envKeys } = useSettings();
-  const { t } = useTranslation();
+  const { t, lang } = useTranslation();
   const [input, setInput] = useState('');
   const [sending, setSending] = useState(false);
   const [showDropdown, setShowDropdown] = useState(false);
   const scrollRef = useRef<HTMLDivElement>(null);
   const dropdownRef = useRef<HTMLDivElement>(null);
+
+  // Text selection state for floating "Ask about this" button
+  const [selectionState, setSelectionState] = useState<{
+    text: string;
+    messageId: string;
+    rect: {
+      top: number;
+      bottom: number;
+      left: number;
+      width: number;
+      height: number;
+    };
+  } | null>(null);
+
+  // Listen to text selection and scrolling
+  useEffect(() => {
+    const handleSelectionChange = () => {
+      const selection = window.getSelection();
+      if (!selection || selection.isCollapsed) {
+        setSelectionState(null);
+        return;
+      }
+
+      const text = selection.toString().trim();
+      if (!text) {
+        setSelectionState(null);
+        return;
+      }
+
+      const messageId = getMessageIdFromSelection(selection);
+      if (!messageId) {
+        setSelectionState(null);
+        return;
+      }
+
+      try {
+        const range = selection.getRangeAt(0);
+        const rect = range.getBoundingClientRect();
+
+        if (rect.width === 0 || rect.height === 0) {
+          setSelectionState(null);
+          return;
+        }
+
+        // Verify that the selection is visible in the scroll container
+        const containerEl = scrollRef.current;
+        if (containerEl) {
+          const containerRect = containerEl.getBoundingClientRect();
+          const isVisible = rect.bottom > containerRect.top && rect.top < containerRect.bottom;
+          if (!isVisible) {
+            setSelectionState(null);
+            return;
+          }
+        }
+
+        setSelectionState({
+          text,
+          messageId,
+          rect: {
+            top: rect.top,
+            bottom: rect.bottom,
+            left: rect.left,
+            width: rect.width,
+            height: rect.height,
+          },
+        });
+      } catch (err) {
+        console.error('Error getting selection rect:', err);
+        setSelectionState(null);
+      }
+    };
+
+    document.addEventListener('selectionchange', handleSelectionChange);
+    window.addEventListener('resize', handleSelectionChange);
+
+    const scrollEl = scrollRef.current;
+    if (scrollEl) {
+      scrollEl.addEventListener('scroll', handleSelectionChange);
+    }
+
+    return () => {
+      document.removeEventListener('selectionchange', handleSelectionChange);
+      window.removeEventListener('resize', handleSelectionChange);
+      if (scrollEl) {
+        scrollEl.removeEventListener('scroll', handleSelectionChange);
+      }
+    };
+  }, []);
+
+  const handleAskAboutThis = async () => {
+    if (!selectionState || !hasKey) return;
+    const { text, messageId } = selectionState;
+    
+    // Clear selection
+    window.getSelection()?.removeAllRanges();
+    setSelectionState(null);
+
+    const promptText = lang === 'uk'
+      ? `Розкажи більше про ${text}`
+      : `Tell me more about ${text}`;
+
+    setSending(true);
+    try {
+      await onSendMessage(promptText, messageId);
+    } catch (err) {
+      console.error(err);
+    } finally {
+      setSending(false);
+    }
+  };
+
+  const floatingButtonPosition = React.useMemo(() => {
+    if (!selectionState) return null;
+    const { rect } = selectionState;
+    const buttonWidth = 40; // 38px + border/padding
+    const buttonHeight = 40;
+
+    let top = rect.top - buttonHeight - 8;
+    if (top < 8) {
+      top = rect.bottom + 8;
+    }
+
+    let left = rect.left + rect.width / 2 - buttonWidth / 2;
+    left = Math.max(8, Math.min(left, window.innerWidth - buttonWidth - 8));
+
+    return {
+      top: `${top}px`,
+      left: `${left}px`,
+    };
+  }, [selectionState]);
 
   const isProviderEnabled = (providerId: string) => {
     if (!settings) return false;
@@ -639,6 +787,20 @@ export default function ChatThread({
           </div>
         </form>
       </div>
+
+      {/* Floating selection "Ask about this" button */}
+      {selectionState && floatingButtonPosition && (
+        <button
+          onMouseDown={(e) => e.preventDefault()}
+          onTouchStart={(e) => e.preventDefault()}
+          onClick={handleAskAboutThis}
+          style={floatingButtonPosition}
+          className="fixed z-50 flex h-10 w-10 items-center justify-center rounded-full bg-white dark:bg-neutral-800 text-blue-600 dark:text-blue-400 border border-neutral-200 dark:border-neutral-700 shadow-xl hover:bg-blue-50 dark:hover:bg-neutral-700/80 active:scale-95 transition-all duration-150 cursor-pointer animate-in fade-in zoom-in-95 duration-100"
+          title={lang === 'uk' ? 'Запитати про це' : 'Ask about this'}
+        >
+          <Sparkles className="h-4.5 w-4.5 text-blue-600 dark:text-blue-400 fill-current" />
+        </button>
+      )}
     </div>
   );
 }

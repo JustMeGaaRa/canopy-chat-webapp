@@ -21,7 +21,7 @@ interface ChatContextType {
   selectNode: (nodeId: string | null) => Promise<void>;
   startNewChat: () => void;
   deleteChat: (id: string) => Promise<void>;
-  sendMessage: (content: string) => Promise<void>;
+  sendMessage: (content: string, overrideParentId?: string | null) => Promise<void>;
   setError: React.Dispatch<React.SetStateAction<string | null>>;
   setActiveChatId: (id: string | null) => void;
   toggleBookmark: (nodeId: string) => Promise<void>;
@@ -208,14 +208,14 @@ export function ChatProvider({ children }: { children: React.ReactNode }) {
 
   // Send message
   const sendMessage = useCallback(
-    async (content: string) => {
+    async (content: string, overrideParentId?: string | null) => {
       if (!content.trim()) return;
       setError(null);
 
       let chatId = activeChatId;
-      let parentId = selectedNodeId;
+      let parentId = overrideParentId !== undefined ? overrideParentId : selectedNodeId;
 
-      if (parentId && activeChat) {
+      if (overrideParentId === undefined && parentId && activeChat) {
         const selectedNode = activeChat.nodes.find((n) => n.id === parentId);
         if (selectedNode && selectedNode.role === 'user') {
           const assistantReply = activeChat.nodes.find(
