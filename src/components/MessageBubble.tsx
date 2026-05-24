@@ -82,7 +82,7 @@ export default function MessageBubble({
               </div>
 
               {/* Message Actions & Sent Time - Always at the bottom (Visible on Hover) */}
-              <div className="opacity-0 group-hover:opacity-100 transition-opacity duration-200 flex items-center gap-1 mt-1.5 bg-neutral-100/60 dark:bg-neutral-800/40 backdrop-blur-xs rounded-xl p-0.5 border border-neutral-200/40 dark:border-neutral-700/30 shrink-0 select-none">
+              <div className="opacity-100 md:opacity-0 md:group-hover:opacity-100 transition-opacity duration-200 flex items-center gap-1 mt-1.5 shrink-0 select-none">
                 {formattedTime && (
                   <span className="text-[10px] text-neutral-400 dark:text-neutral-500 font-mono px-1.5 select-none">
                     {formattedTime}
@@ -209,7 +209,7 @@ export default function MessageBubble({
               </div>
 
               {/* Assistant Message Actions & Sent Time - Always at the bottom (Visible on Hover) */}
-              <div className="opacity-0 group-hover:opacity-100 transition-opacity duration-200 flex items-center gap-1 mt-1.5 bg-neutral-100/60 dark:bg-neutral-800/40 backdrop-blur-xs rounded-xl p-0.5 border border-neutral-200/40 dark:border-neutral-700/30 self-start shrink-0 select-none">
+              <div className="opacity-100 md:opacity-0 md:group-hover:opacity-100 transition-opacity duration-200 flex items-center gap-1 mt-1.5 self-start shrink-0 select-none">
                 {formattedTime && (
                   <span className="text-[10px] text-neutral-400 dark:text-neutral-500 font-mono px-1.5 select-none">
                     {formattedTime}

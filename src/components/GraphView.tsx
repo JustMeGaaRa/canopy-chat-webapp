@@ -8,7 +8,7 @@ import { Chat, ChatNode } from '@/lib/storage/types';
 import { useSettings } from '@/hooks/useSettings';
 import { useTranslation } from '@/hooks/useTranslation';
 import { computeRadialLayout } from '@/lib/graph-layout';
-import { GitFork, ZoomIn, ZoomOut, Target } from 'lucide-react';
+import { GitFork, ZoomIn, ZoomOut, Target, X } from 'lucide-react';
 
 const CollapseIcon = () => (
   <svg
@@ -249,16 +249,7 @@ export default function GraphView({
         </div>
       ) : (
         <>
-          {/* Collapse button — z-20 to sit above SVG */}
-          {onToggleCollapse && (
-            <button
-              onClick={onToggleCollapse}
-              className="absolute top-3 left-3 z-20 hidden lg:flex items-center justify-center rounded-full p-2 text-neutral-500 hover:bg-neutral-200/50 hover:text-neutral-900 dark:text-neutral-400 dark:hover:bg-[#2c2d30]/60 dark:hover:text-neutral-100 transition cursor-pointer"
-              title={t('closeSidebar')}
-            >
-              <CollapseIcon />
-            </button>
-          )}
+
 
           {/* Zoom / centre controls — z-20 */}
           <div className="absolute bottom-4 right-4 z-20 flex flex-col sm:flex-row gap-2 pointer-events-auto">
@@ -287,6 +278,17 @@ export default function GraphView({
             </div>
           </div>
         </>
+      )}
+
+      {/* Desktop Close Button */}
+      {onToggleCollapse && !isCollapsed && (
+        <button
+          onClick={onToggleCollapse}
+          className="absolute top-3 right-4 z-30 hidden md:flex h-8 w-8 items-center justify-center rounded-lg text-neutral-500 hover:bg-neutral-200/50 hover:text-neutral-900 dark:text-neutral-400 dark:hover:bg-[#2c2d30]/60 dark:hover:text-neutral-100 transition cursor-pointer"
+          title={t('closeGraph')}
+        >
+          <X className="h-5 w-5" />
+        </button>
       )}
 
       {/* Always-visible Mobile Close Button */}

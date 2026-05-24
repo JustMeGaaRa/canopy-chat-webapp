@@ -149,7 +149,8 @@ export default function Home() {
       </div>
 
       {/* Main Split Layout: Middle & Right Panels */}
-      <div className="flex-1 flex overflow-hidden">
+      <div className="relative flex-1 flex overflow-hidden">
+
         {/* Middle Panel: Active Conversation Thread */}
         <div className="flex-1 h-full min-w-0 md:w-1/2 lg:flex-1">
           <ChatThread

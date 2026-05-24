@@ -412,23 +412,14 @@ export default function ChatThread({
             <Network className="h-5 w-5" />
           </button>
 
-          {/* Desktop Graph View Toggle */}
-          {onToggleGraph && (
+          {/* Desktop Graph View Toggle (Open) */}
+          {onToggleGraph && isGraphCollapsed && (
             <button
               onClick={onToggleGraph}
-              className={`group hidden md:flex h-8 w-8 items-center justify-center rounded-lg transition cursor-pointer ${
-                isGraphCollapsed
-                  ? 'text-neutral-500 hover:bg-neutral-100 hover:text-neutral-900 dark:text-neutral-400 dark:hover:bg-neutral-800 dark:hover:text-neutral-100'
-                  : 'bg-neutral-200/50 text-neutral-800 hover:bg-neutral-200 dark:bg-neutral-800/50 dark:text-neutral-200 dark:hover:bg-neutral-800'
-              }`}
-              title={isGraphCollapsed ? t('openSidebar') : t('closeSidebar')}
+              className="hidden md:flex h-8 w-8 items-center justify-center rounded-lg text-neutral-500 hover:bg-neutral-100 hover:text-neutral-900 dark:text-neutral-400 dark:hover:bg-neutral-800 dark:hover:text-neutral-100 transition cursor-pointer"
+              title={t('openSidebar')}
             >
-              <div className="group-hover:hidden">
-                <GitFork className="h-4.5 w-4.5" />
-              </div>
-              <div className="hidden group-hover:block">
-                {isGraphCollapsed ? <ExpandIcon /> : <CollapseIcon />}
-              </div>
+              <GitFork className="h-4.5 w-4.5" />
             </button>
           )}
         </div>
