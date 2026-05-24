@@ -388,11 +388,11 @@ export default function ChatThread({
     <div className="flex h-full flex-col bg-white dark:bg-[#131314]">
       {/* Header bar */}
       <div className="flex h-14 items-center justify-between px-4 border-b border-neutral-200/60 dark:border-neutral-800/60 shrink-0 select-none bg-white/80 dark:bg-[#131314]/80 backdrop-blur-md z-10">
-        <div className="flex items-center gap-2">
+        <div className="flex items-center gap-2 flex-1 min-w-0 pr-2">
           {/* Mobile Sidebar Hamburger */}
           <button
             onClick={onOpenSidebarMobile}
-            className="rounded-lg p-1.5 text-neutral-500 hover:bg-neutral-100 dark:text-neutral-400 dark:hover:bg-neutral-800 transition md:hidden"
+            className="rounded-lg p-1.5 text-neutral-500 hover:bg-neutral-100 dark:text-neutral-400 dark:hover:bg-neutral-800 transition md:hidden shrink-0"
             title={t('openConversations')}
           >
             <Menu className="h-5 w-5" />
@@ -402,7 +402,7 @@ export default function ChatThread({
           </span>
         </div>
 
-        <div className="flex items-center gap-1.5">
+        <div className="flex items-center gap-1.5 shrink-0">
           {/* Mobile Graph View Toggle */}
           <button
             onClick={onOpenGraphMobile}
@@ -553,7 +553,11 @@ export default function ChatThread({
             <textarea
               rows={1}
               value={input}
-              onChange={(e) => setInput(e.target.value)}
+              onChange={(e) => {
+                setInput(e.target.value);
+                e.target.style.height = 'auto';
+                e.target.style.height = `${e.target.scrollHeight}px`;
+              }}
               onKeyDown={(e) => {
                 if (e.key === 'Enter' && !e.shiftKey) {
                   e.preventDefault();
@@ -562,15 +566,16 @@ export default function ChatThread({
               }}
               placeholder={t('textareaPlaceholder')}
               disabled={sending || streaming}
-              className="w-full resize-none bg-transparent border-0 outline-hidden focus:ring-0 focus:outline-hidden text-sm text-neutral-900 dark:text-neutral-50 placeholder-neutral-400 dark:placeholder-neutral-500 max-h-36 font-sans px-3 pt-2 pb-2.5"
+              className="w-full resize-none bg-transparent border-0 outline-hidden focus:ring-0 focus:outline-hidden text-sm text-neutral-900 dark:text-neutral-50 placeholder-neutral-400 dark:placeholder-neutral-500 max-h-36 overflow-y-auto scrollbar-thin font-sans px-3 pt-2 pb-2.5"
             />
 
             <div className="flex items-center justify-between border-t border-neutral-100/50 dark:border-neutral-800/30 pt-2 px-1 select-none">
               <div className="flex items-center gap-1.5">
                 {/* Plus Button */}
+                {/* TODO: Add context functionality is currently not supported */}
                 <button
                   type="button"
-                  className="p-1.5 rounded-lg text-neutral-400 hover:text-neutral-600 dark:hover:text-neutral-200 hover:bg-neutral-100 dark:hover:bg-neutral-800 transition-colors"
+                  className="hidden p-1.5 rounded-lg text-neutral-400 hover:text-neutral-600 dark:hover:text-neutral-200 hover:bg-neutral-100 dark:hover:bg-neutral-800 transition-colors"
                   title={t('addContext')}
                 >
                   <Plus className="h-4.5 w-4.5" />
@@ -652,9 +657,10 @@ export default function ChatThread({
                     <Send className="h-4 w-4" />
                   </button>
                 ) : (
+                  /* TODO: Voice input functionality is currently not supported */
                   <button
                     type="button"
-                    className="rounded-full bg-neutral-200/60 p-2 text-neutral-500 dark:bg-neutral-800 dark:text-neutral-400 hover:bg-neutral-300/60 dark:hover:bg-neutral-700 transition cursor-pointer"
+                    className="hidden rounded-full bg-neutral-200/60 p-2 text-neutral-500 dark:bg-neutral-800 dark:text-neutral-400 hover:bg-neutral-300/60 dark:hover:bg-neutral-700 transition cursor-pointer"
                     onClick={() => {
                       alert(t('speechAlert'));
                     }}
